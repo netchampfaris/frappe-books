@@ -27,18 +27,15 @@
       "
       :class="platform === 'Mac' && languageDirection === 'rtl' ? 'me-18' : ''"
     >
-      <Button
+      <FrappeButton
         v-if="!showSidebar"
-        :background="false"
-        :icon="true"
-        :padding="false"
-        class="!h-8 !w-8 !px-0 flex-shrink-0 rtl-rotate-180"
-        :title="t`Show sidebar`"
+        variant="ghost"
+        icon="lucide-chevrons-right"
+        class="!h-8 !w-8 !px-0 shrink-0 rtl-rotate-180"
+        :tooltip="t`Show sidebar`"
         :aria-label="t`Show sidebar`"
         @click="toggleSidebar"
-      >
-        <Icon name="chevrons-right" class="h-4 w-4" />
-      </Button>
+      />
 
       <!-- Nav Group -->
       <PageHeaderNavGroup />
@@ -65,17 +62,23 @@
   </FrappePageHeader>
 </template>
 <script lang="ts">
-import { PageHeader as FrappePageHeader } from 'frappe-ui';
+import {
+  Button as FrappeButton,
+  PageHeader as FrappePageHeader,
+} from 'frappe-ui';
 import { languageDirectionKey } from 'src/utils/injectionKeys';
 import { showSidebar } from 'src/utils/refs';
 import { toggleSidebar } from 'src/utils/ui';
 import { defineComponent, inject, Transition } from 'vue';
-import Button from './Button.vue';
-import Icon from './Icon.vue';
 import PageHeaderNavGroup from './PageHeaderNavGroup.vue';
 
 export default defineComponent({
-  components: { Button, FrappePageHeader, Icon, Transition, PageHeaderNavGroup },
+  components: {
+    FrappeButton,
+    FrappePageHeader,
+    PageHeaderNavGroup,
+    Transition,
+  },
   props: {
     title: { type: String, default: '' },
     border: { type: Boolean, default: true },

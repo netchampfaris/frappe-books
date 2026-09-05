@@ -1,9 +1,7 @@
 <template>
   <div class="min-w-0">
-    <FormHeader :form-title="t`Shortcuts`" />
-    <hr class="border-outline-gray-1" />
-    <div
-      class="max-h-[min(34rem,calc(100vh-10rem))] overflow-y-auto custom-scroll custom-scroll-thumb2 text-ink-gray-9"
+    <FrappeScrollArea
+      class="max-h-[min(34rem,calc(100vh-10rem))] text-ink-gray-9"
     >
       <template v-for="g in groups" :key="g.label">
         <div class="p-4 w-full">
@@ -39,20 +37,23 @@
             {{ t`${g.shortcuts.length} shortcuts` }}
           </div>
         </div>
-        <hr class="border-outline-gray-1" />
+        <FrappeDivider />
       </template>
       <div class="p-4 text-base text-ink-gray-6">
         {{ t`More shortcuts will be added soon.` }}
       </div>
-    </div>
+    </FrappeScrollArea>
   </div>
 </template>
 <script lang="ts">
 import { t } from 'fyo';
+import {
+  Divider as FrappeDivider,
+  ScrollArea as FrappeScrollArea,
+} from 'frappe-ui';
 import { ShortcutKey } from 'src/utils/ui';
 import { defineComponent } from 'vue';
 import DisclosureButton from './DisclosureButton.vue';
-import FormHeader from './FormHeader.vue';
 import ShortcutKeys from './ShortcutKeys.vue';
 
 type Group = {
@@ -63,7 +64,12 @@ type Group = {
 };
 
 export default defineComponent({
-  components: { FormHeader, ShortcutKeys, DisclosureButton },
+  components: {
+    DisclosureButton,
+    FrappeDivider,
+    FrappeScrollArea,
+    ShortcutKeys,
+  },
   data() {
     return { groups: [] } as { groups: Group[] };
   },

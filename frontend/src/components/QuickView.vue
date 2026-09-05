@@ -17,34 +17,40 @@
       <FrappeSpinner size="sm" class="text-ink-gray-5" />
     </div>
 
-    <dl
+    <FrappeScrollArea
       v-else-if="values.length"
-      class="custom-scroll custom-scroll-thumb1 max-h-64 overflow-y-auto py-1"
+      class="max-h-64"
+      viewport-class="py-1"
     >
-      <div
-        v-for="v of values"
-        :key="v.label"
-        class="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] items-baseline gap-3 px-3 py-1.5"
-      >
-        <dt class="truncate text-sm text-ink-gray-5" :title="v.label">
-          {{ v.label }}
-        </dt>
-        <dd class="truncate text-sm text-ink-gray-8" :title="v.value">
-          {{ v.value }}
-        </dd>
-      </div>
-    </dl>
+      <dl>
+        <div
+          v-for="v of values"
+          :key="v.label"
+          class="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] items-baseline gap-3 px-3 py-1.5"
+        >
+          <dt class="truncate text-sm text-ink-gray-5" :title="v.label">
+            {{ v.label }}
+          </dt>
+          <dd class="truncate text-sm text-ink-gray-8" :title="v.value">
+            {{ v.value }}
+          </dd>
+        </div>
+      </dl>
+    </FrappeScrollArea>
   </div>
 </template>
 <script lang="ts">
 import { isFalsy } from 'fyo/utils';
-import { Spinner as FrappeSpinner } from 'frappe-ui';
+import {
+  ScrollArea as FrappeScrollArea,
+  Spinner as FrappeSpinner,
+} from 'frappe-ui';
 import { Field } from 'schemas/types';
 import { defineComponent } from 'vue';
 
 export default defineComponent({
   name: 'QuickView',
-  components: { FrappeSpinner },
+  components: { FrappeScrollArea, FrappeSpinner },
   props: {
     schemaName: { type: String, required: true },
     name: { type: String, required: true },

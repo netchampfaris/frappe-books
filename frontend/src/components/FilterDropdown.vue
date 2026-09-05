@@ -4,8 +4,6 @@
     v-if="fields.length"
     placement="bottom-end"
     @close="emitFilterChange"
-    :close-on-click-outside="true"
-    :close-on-click-content="false"
   >
     <template #target>
       <Button>

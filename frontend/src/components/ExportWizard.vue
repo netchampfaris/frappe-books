@@ -2,7 +2,7 @@
   <div>
     <!-- Export Wizard Header -->
     <FormHeader :form-title="label" :form-sub-title="t`Export Wizard`" />
-    <hr class="border-outline-gray-1" />
+    <FrappeDivider />
 
     <!-- Export Config -->
     <div class="flex flex-wrap items-end gap-4 p-4">
@@ -37,10 +37,10 @@
         @change="(value: number) => (limit = value)"
       />
     </div>
-    <hr class="border-outline-gray-1" />
+    <FrappeDivider />
 
     <!-- Fields Selection -->
-    <div class="max-h-80 overflow-auto custom-scroll custom-scroll-thumb2">
+    <FrappeScrollArea class="max-h-80">
       <!-- Main Fields -->
       <div class="p-4">
         <h2 class="text-sm font-semibold text-ink-gray-8">
@@ -102,15 +102,20 @@
           />
         </div>
       </div>
-    </div>
+    </FrappeScrollArea>
 
     <!-- Export Button -->
-    <hr class="border-outline-gray-1" />
+    <FrappeDivider />
     <div class="p-4 flex justify-between items-center">
       <p class="text-sm text-ink-gray-6">
         {{ t`${numSelected} fields selected` }}
       </p>
-      <Button type="primary" @click="exportData">{{ t`Export` }}</Button>
+      <FrappeButton
+        variant="solid"
+        theme="gray"
+        :label="t`Export`"
+        @click="exportData"
+      />
     </div>
   </div>
 </template>
@@ -127,8 +132,12 @@ import {
 } from 'src/utils/export';
 import { ExportField, ExportFormat, ExportTableField } from 'src/utils/types';
 import { QueryFilter } from 'utils/db/types';
+import {
+  Button as FrappeButton,
+  Divider as FrappeDivider,
+  ScrollArea as FrappeScrollArea,
+} from 'frappe-ui';
 import { PropType, defineComponent } from 'vue';
-import Button from './Button.vue';
 import Check from './Controls/Check.vue';
 import Int from './Controls/Int.vue';
 import Select from './Controls/Select.vue';
@@ -144,7 +153,15 @@ interface ExportWizardData {
 }
 
 export default defineComponent({
-  components: { FormHeader, Check, Select, Button, Int },
+  components: {
+    Check,
+    FormHeader,
+    FrappeButton,
+    FrappeDivider,
+    FrappeScrollArea,
+    Int,
+    Select,
+  },
   props: {
     schemaName: { type: String, required: true },
     listFilters: { type: Object as PropType<QueryFilter>, default: () => {} },

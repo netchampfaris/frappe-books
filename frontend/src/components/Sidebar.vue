@@ -7,9 +7,7 @@
       'window-drag': platform !== 'Windows',
     }"
   >
-    <div
-      class="min-h-0 flex-1 overflow-y-auto custom-scroll custom-scroll-thumb1"
-    >
+    <FrappeScrollArea class="min-h-0 flex-1">
       <!-- Company name -->
       <div
         class="px-4 flex flex-row items-center justify-between mb-4"
@@ -35,12 +33,10 @@
         >
           <template #prefix>
             <Icon
-              class="flex-shrink-0"
               :name="group.icon"
               :size="group.iconSize || '18'"
               :height="group.iconHeight ?? 0"
               :active="!!isGroupActive(group)"
-              :darkMode="darkMode"
             />
           </template>
         </FrappeSidebarItem>
@@ -59,7 +55,7 @@
           </FrappeSidebarItem>
         </div>
       </div>
-    </div>
+    </FrappeScrollArea>
 
     <!-- Report Issue and DB Switcher -->
     <div class="window-no-drag flex-shrink-0 flex flex-col gap-2 py-2 px-4">
@@ -69,7 +65,7 @@
         @click="openDocumentation"
       >
         <template #prefix>
-          <Icon name="help-circle" class="h-4 w-4 flex-shrink-0" />
+          <Icon name="help-circle" />
         </template>
       </FrappeSidebarItem>
 
@@ -79,7 +75,7 @@
         @click="viewShortcuts = true"
       >
         <template #prefix>
-          <Icon name="command" class="h-4 w-4 flex-shrink-0" />
+          <Icon name="command" />
         </template>
       </FrappeSidebarItem>
 
@@ -91,7 +87,7 @@
         @click="$emit('change-db-file')"
       >
         <template #prefix>
-          <Icon name="database" class="h-4 w-4 flex-shrink-0" />
+          <Icon name="database" />
         </template>
       </FrappeSidebarItem>
 
@@ -102,35 +98,35 @@
           @click="() => reportIssue()"
         >
           <template #prefix>
-            <Icon name="flag" class="h-4 w-4 flex-shrink-0" />
+            <Icon name="flag" />
           </template>
         </FrappeSidebarItem>
 
-        <Button
-          :background="false"
-          :icon="true"
-          :padding="false"
-          :title="t`Hide sidebar`"
+        <FrappeButton
+          variant="ghost"
+          icon="lucide-chevrons-left"
+          :tooltip="t`Hide sidebar`"
           :aria-label="t`Hide sidebar`"
-          class="flex-shrink-0 rtl-rotate-180"
+          class="shrink-0 rtl-rotate-180"
           @click="() => toggleSidebar()"
-        >
-          <Icon name="chevrons-left" class="w-4 h-4" />
-        </Button>
+        />
       </div>
     </div>
 
-    <Modal
-      :open-modal="viewShortcuts"
+    <FrappeDialog
+      v-model:open="viewShortcuts"
       size="2xl"
-      @closemodal="viewShortcuts = false"
+      :title="t`Shortcuts`"
     >
       <ShortcutsHelper class="w-full" />
-    </Modal>
+    </FrappeDialog>
   </FrappeSidebar>
 </template>
 <script lang="ts">
 import {
+  Button as FrappeButton,
+  Dialog as FrappeDialog,
+  ScrollArea as FrappeScrollArea,
   Sidebar as FrappeSidebar,
   SidebarItem as FrappeSidebarItem,
 } from 'frappe-ui';
@@ -148,19 +144,18 @@ import { routeTo, toggleSidebar } from 'src/utils/ui';
 import { defineComponent, inject } from 'vue';
 import router from '../router';
 import Icon from './Icon.vue';
-import Button from './Button.vue';
-import Modal from './Modal.vue';
 import ShortcutsHelper from './ShortcutsHelper.vue';
 
 const COMPONENT_NAME = 'Sidebar';
 
 export default defineComponent({
   components: {
-    Button,
+    FrappeButton,
+    FrappeDialog,
+    FrappeScrollArea,
     FrappeSidebar,
     FrappeSidebarItem,
     Icon,
-    Modal,
     ShortcutsHelper,
   },
   props: {

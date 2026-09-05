@@ -52,7 +52,6 @@ export default defineComponent({
       type: [Boolean, null] as PropType<boolean | null>,
       default: null,
     },
-    right: Boolean,
     entryDelay: { type: Number, default: 0 },
     exitDelay: { type: Number, default: 0 },
     placement: {
