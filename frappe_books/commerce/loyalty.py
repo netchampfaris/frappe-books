@@ -4,7 +4,7 @@ from decimal import ROUND_HALF_UP, Decimal
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, getdate, nowdate
+from frappe.utils import add_days, cint, getdate, nowdate
 
 from frappe_books.accounting.money import as_decimal, rounded
 
@@ -12,9 +12,11 @@ from frappe_books.accounting.money import as_decimal, rounded
 def validate_program(program):
 	if getdate(program.from_date) > getdate(program.to_date):
 		frappe.throw(_("Loyalty program start date must be on or before its end date."))
-	if program.maximum_use < 0 or program.used < 0:
+	maximum_use = cint(program.maximum_use)
+	used = cint(program.used)
+	if maximum_use < 0 or used < 0:
 		frappe.throw(_("Loyalty-program usage counts cannot be negative."))
-	if program.maximum_use and program.used > program.maximum_use:
+	if maximum_use and used > maximum_use:
 		frappe.throw(_("Loyalty-program usage cannot exceed its maximum."))
 	if as_decimal(program.conversion_factor) < 0:
 		frappe.throw(_("Loyalty conversion factor cannot be negative."))
@@ -172,13 +174,15 @@ def _validate_active(program, date):
 		frappe.throw(_("Loyalty program {0} is disabled.").format(program.name))
 	if date < getdate(program.from_date) or date > getdate(program.to_date):
 		frappe.throw(_("Loyalty program {0} is not active on the invoice date.").format(program.name))
-	if program.maximum_use and program.used >= program.maximum_use:
+	maximum_use = cint(program.maximum_use)
+	if maximum_use and cint(program.used) >= maximum_use:
 		frappe.throw(_("Loyalty program {0} has reached its usage limit.").format(program.name))
 
 
 def _update_program_usage(program, delta):
-	used = max(0, int(program.used or 0) + delta)
+	used = max(0, cint(program.used) + delta)
 	values = {"used": used}
-	if program.maximum_use:
-		values["is_enabled"] = int(used < program.maximum_use)
+	maximum_use = cint(program.maximum_use)
+	if maximum_use:
+		values["is_enabled"] = int(used < maximum_use)
 	frappe.db.set_value("Books Loyalty Program", program.name, values, update_modified=False)

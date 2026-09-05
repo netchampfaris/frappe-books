@@ -5,6 +5,7 @@ from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, Decimal
 
 import frappe
 from frappe import _
+from frappe.utils import cint
 
 from frappe_books.accounting.money import as_decimal, rounded
 
@@ -30,9 +31,11 @@ def validate_coupon(coupon):
 		frappe.throw(_("Coupon codes can only use coupon-based pricing rules."))
 	_validate_range(coupon.min_amount, coupon.max_amount, _("amount"), strict=True)
 	_validate_dates(coupon.valid_from, coupon.valid_to)
-	if coupon.maximum_use < 0 or coupon.used < 0:
+	maximum_use = cint(coupon.maximum_use)
+	used = cint(coupon.used)
+	if maximum_use < 0 or used < 0:
 		frappe.throw(_("Coupon usage counts cannot be negative."))
-	if coupon.maximum_use and coupon.used > coupon.maximum_use:
+	if maximum_use and used > maximum_use:
 		frappe.throw(_("Coupon usage cannot exceed its maximum use limit."))
 	if as_decimal(rule.min_amount) and as_decimal(coupon.min_amount) < as_decimal(rule.min_amount):
 		frappe.throw(_("Coupon minimum amount cannot be below the pricing-rule minimum."))
@@ -87,8 +90,9 @@ def update_coupon_usage(invoice, delta):
 		if not row.coupons:
 			continue
 		coupon = frappe.get_doc("Books Coupon Code", row.coupons)
-		used = max(0, int(coupon.used or 0) + delta)
-		if delta > 0 and coupon.maximum_use and used > coupon.maximum_use:
+		used = max(0, cint(coupon.used) + delta)
+		maximum_use = cint(coupon.maximum_use)
+		if delta > 0 and maximum_use and used > maximum_use:
 			frappe.throw(_("Coupon {0} has reached its use limit.").format(coupon.name))
 		frappe.db.set_value("Books Coupon Code", coupon.name, "used", used, update_modified=False)
 
@@ -102,7 +106,8 @@ def _validated_coupons(invoice):
 		coupon = frappe.get_doc("Books Coupon Code", name)
 		if not coupon.is_enabled:
 			frappe.throw(_("Coupon {0} is disabled.").format(name))
-		if coupon.maximum_use and coupon.used >= coupon.maximum_use:
+		maximum_use = cint(coupon.maximum_use)
+		if maximum_use and cint(coupon.used) >= maximum_use:
 			frappe.throw(_("Coupon {0} has reached its use limit.").format(name))
 		if not _within_limits(coupon, invoice.date, invoice.grand_total):
 			frappe.throw(_("Coupon {0} is not valid for this invoice.").format(name))
