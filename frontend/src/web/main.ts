@@ -5,21 +5,30 @@ import { outsideClickDirective } from 'src/utils/outsideClick';
 import { fyo } from 'src/initFyo';
 import router from 'src/router';
 import WebApp from './WebApp.vue';
+import { loadDevBoot } from './devBoot';
 
-const app = createApp(WebApp);
-app.use(FrappeUI);
-app.use(router);
-app.component('Badge', Badge);
-app.directive('on-outside-click', outsideClickDirective);
-app.mixin({
-  computed: {
-    fyo() {
-      return fyo;
+async function bootstrap() {
+  if (import.meta.env.DEV) {
+    await loadDevBoot();
+  }
+
+  const app = createApp(WebApp);
+  app.use(FrappeUI);
+  app.use(router);
+  app.component('Badge', Badge);
+  app.directive('on-outside-click', outsideClickDirective);
+  app.mixin({
+    computed: {
+      fyo() {
+        return fyo;
+      },
+      platform() {
+        return 'Web';
+      },
     },
-    platform() {
-      return 'Web';
-    },
-  },
-  methods: { t: fyo.t, T: fyo.T },
-});
-app.mount('#app');
+    methods: { t: fyo.t, T: fyo.T },
+  });
+  app.mount('#app');
+}
+
+void bootstrap();

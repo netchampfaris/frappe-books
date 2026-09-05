@@ -13,6 +13,24 @@ from frappe_books.ui_bridge.database import BooksDatabaseBridge
 from frappe_books.ui_bridge.mapping import target_doctype
 
 
+@frappe.whitelist(methods=["GET"])
+def get_boot() -> dict[str, Any]:
+	"""Return the bootstrap payload that ``www/books.html`` injects with Jinja.
+
+	The Vite dev server serves ``frontend/index.html`` without a Jinja pass, so
+	the frontend reads the same values from here while running ``yarn dev``.
+	"""
+	import frappe.sessions
+
+	from frappe_books.www.books import _books_boot
+
+	return {
+		"boot": frappe.sessions.get(),
+		"books_boot": _books_boot(),
+		"csrf_token": frappe.session.csrf_token,
+	}
+
+
 @frappe.whitelist(methods=["POST"])
 def database_call(method: str, args: list[Any] | str | None = None) -> Any:
 	"""Run one Books interface data operation on the current Frappe site."""

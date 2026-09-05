@@ -103,6 +103,31 @@ The app also keeps these Desk routes for administration:
 
 Use standard Frappe **Data Import** and **Data Export** for CSV-based transfers.
 
+## Develop the web app
+
+Start the Vite dev server from the app root and open `http://<your-site>:6969/`:
+
+```bash
+yarn dev
+```
+
+The dev server proxies API calls to the bench web server and picks the site from
+the host you open it on, so opening it on your site host needs no configuration.
+
+Plain `localhost` names no site. The dev server then falls back to
+`sites/currentsite.txt`, or to the single site that has `frappe_books`
+installed, and prints which site it chose on startup. Set the site yourself when
+neither applies:
+
+```bash
+FRAPPE_SITE=books-sqlite.localhost yarn dev
+```
+
+`FRAPPE_WEB_SERVER_PORT` overrides the bench port, which defaults to 8000.
+
+Sign in on the same host you open the dev server on. A session cookie set for
+`books-sqlite.localhost` does not reach `localhost`.
+
 ## Schema synchronization
 
 The checked-in DocTypes and `frappe_books/schema_mapping.json` are generated from the frontend schema files. After you change a frontend schema, synchronize it from the bench:
