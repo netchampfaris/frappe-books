@@ -63,11 +63,6 @@ html.dark input[type='date']::-webkit-calendar-picker-indicator {
   justify-content: center;
 }
 
-/* Table rows belong to one continuous surface; rounded-2 rows are for standalone lists. */
-[data-slot='list'][role='table'] [data-slot='list-row'] {
-  border-radius: 0;
-}
-
 input[type='number'] {
   appearance: textfield;
   -moz-appearance: textfield;

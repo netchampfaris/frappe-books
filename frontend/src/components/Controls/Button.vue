@@ -42,7 +42,7 @@ export default defineComponent({
   },
   computed: {
     labelClasses() {
-      return this.labelClass || 'text-gray-600 text-base';
+      return this.labelClass || 'text-ink-gray-6 text-base';
     },
   },
   methods: {

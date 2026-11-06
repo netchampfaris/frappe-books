@@ -90,7 +90,6 @@ export default defineComponent({
   props: {
     name: { type: String, required: true },
     active: { type: Boolean, default: undefined },
-    darkMode: { type: Boolean, default: false },
     size: {
       type: [String, Number] as PropType<string | number>,
       default: 16,

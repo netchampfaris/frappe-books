@@ -68,7 +68,6 @@ import { Button as FrappeButton, Tooltip as FrappeTooltip } from 'frappe-ui';
 import { DateTime } from 'luxon';
 import { ModelNameEnum } from 'models/types';
 import { fyo } from 'src/initFyo';
-import { uicolors } from 'src/utils/colors';
 import { getDatesAndPeriodList } from 'src/utils/misc';
 import { PeriodKey } from 'src/utils/types';
 import { routeTo } from 'src/utils/ui';
@@ -76,6 +75,17 @@ import { safeParseFloat } from 'utils/index';
 import { PropType, defineComponent } from 'vue';
 import BaseDashboardChart from './BaseDashboardChart.vue';
 import SectionHeader from './SectionHeader.vue';
+
+/**
+ * Static class lookup: Tailwind's scanner only sees complete class strings, so
+ * these must never be built by interpolation. Semantic surface tokens flip
+ * themselves in dark mode.
+ */
+const barColors = {
+  blue: { paid: 'bg-surface-blue-7', unpaid: 'bg-surface-blue-3' },
+  pink: { paid: 'bg-surface-pink-7', unpaid: 'bg-surface-pink-3' },
+  empty: { paid: 'bg-surface-gray-5', unpaid: 'bg-surface-gray-3' },
+} as const;
 
 // Linting broken in this file cause of `extends: ...`
 /*
@@ -93,7 +103,6 @@ export default defineComponent({
   extends: BaseDashboardChart,
   props: {
     schemaName: { type: String as PropType<string>, required: true },
-    darkMode: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -130,17 +139,17 @@ export default defineComponent({
     },
     paidColor(): string {
       if (!this.hasData) {
-        return this.darkMode ? 'bg-gray-700' : 'bg-gray-400';
+        return barColors.empty.paid;
       }
 
-      return `bg-${this.color}-${this.darkMode ? '600' : '500'}`;
+      return barColors[this.color].paid;
     },
     unpaidColor(): string {
       if (!this.hasData) {
-        return `bg-gray-${this.darkMode ? '800' : '200'}`;
+        return barColors.empty.unpaid;
       }
 
-      return `bg-${this.color}-${this.darkMode ? '700 bg-opacity-20' : '200'}`;
+      return barColors[this.color].unpaid;
     },
   },
   async activated() {

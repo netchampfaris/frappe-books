@@ -8,9 +8,12 @@
       style="z-index: 1"
     >
       <div class="flex items-center justify-between w-full">
-        <Button :icon="true" @click="$emit('close')">
-          <Icon name="x" class="w-4 h-4" />
-        </Button>
+        <FrappeButton
+          variant="ghost"
+          icon="lucide-x"
+          :aria-label="t`Close linked entries`"
+          @click="$emit('close')"
+        />
         <p class="text-xl font-semibold text-ink-gray-6">
           {{ t`Linked Entries` }}
         </p>
@@ -45,96 +48,103 @@
           v-show="!entries[sn].collapsed"
           class="entry-container rounded-4 border border-outline-gray-1 overflow-hidden"
         >
-          <!-- Entry -->
-          <FrappeItemListRow
-            v-for="e of entries[sn].details"
-            :key="String(e.name) + sn"
-            as="button"
-            type="button"
-            size="md"
-            class="!rounded-none text-start border-b last:border-0 border-outline-gray-1 hover:bg-surface-gray-2"
-            @click="routeTo(sn, String(e.name))"
-          >
-            <div class="flex justify-between">
-              <!-- Name -->
-              <p class="font-semibold text-ink-gray-8">
-                {{ e.name }}
-              </p>
+          <FrappeList :columns="['minmax(0, 1fr)']" divider="full">
+            <!-- Entry -->
+            <FrappeListRow
+              v-for="e of entries[sn].details"
+              :key="String(e.name) + sn"
+              :value="String(e.name)"
+              @click="routeTo(sn, String(e.name))"
+            >
+              <FrappeListCell class="flex-col items-stretch py-2.5">
+                <div class="flex justify-between gap-2">
+                  <!-- Name -->
+                  <p class="text-base-semibold text-ink-gray-8 truncate">
+                    {{ e.name }}
+                  </p>
 
-              <!-- Date -->
-              <p v-if="e.date" class="text-xs text-ink-gray-6">
-                {{ fyo.format(e.date, 'Date') }}
-              </p>
-            </div>
-            <div class="flex gap-2 mt-1 pill-container flex-wrap">
-              <!-- Credit or Debit (GLE) -->
-              <FrappeBadge
-                v-if="isPesa(e.credit) && e.credit.isPositive()"
-                theme="gray"
-                variant="subtle"
-              >
-                {{ t`Cr. ${fyo.format(e.credit, 'Currency')}` }}
-              </FrappeBadge>
-              <FrappeBadge
-                v-else-if="isPesa(e.debit) && e.debit.isPositive()"
-                theme="gray"
-                variant="subtle"
-              >
-                {{ t`Dr. ${fyo.format(e.debit, 'Currency')}` }}
-              </FrappeBadge>
+                  <!-- Date -->
+                  <p v-if="e.date" class="text-xs text-ink-gray-5 shrink-0">
+                    {{ fyo.format(e.date, 'Date') }}
+                  </p>
+                </div>
+                <div class="flex gap-2 mt-1 pill-container flex-wrap">
+                  <!-- Credit or Debit (GLE) -->
+                  <FrappeBadge
+                    v-if="isPesa(e.credit) && e.credit.isPositive()"
+                    theme="gray"
+                    variant="subtle"
+                  >
+                    {{ t`Cr. ${fyo.format(e.credit, 'Currency')}` }}
+                  </FrappeBadge>
+                  <FrappeBadge
+                    v-else-if="isPesa(e.debit) && e.debit.isPositive()"
+                    theme="gray"
+                    variant="subtle"
+                  >
+                    {{ t`Dr. ${fyo.format(e.debit, 'Currency')}` }}
+                  </FrappeBadge>
 
-              <!-- Party or EntryType or Account -->
-              <FrappeBadge
-                v-if="e.party || e.entryType || e.account"
-                theme="gray"
-                variant="subtle"
-              >
-                {{ e.party || e.entryType || e.account }}
-              </FrappeBadge>
+                  <!-- Party or EntryType or Account -->
+                  <FrappeBadge
+                    v-if="e.party || e.entryType || e.account"
+                    theme="gray"
+                    variant="subtle"
+                  >
+                    {{ e.party || e.entryType || e.account }}
+                  </FrappeBadge>
 
-              <FrappeBadge v-if="e.item" theme="gray" variant="subtle">
-                {{ e.item }}
-              </FrappeBadge>
-              <FrappeBadge v-if="e.location" theme="gray" variant="subtle">
-                {{ e.location }}
-              </FrappeBadge>
+                  <FrappeBadge v-if="e.item" theme="gray" variant="subtle">
+                    {{ e.item }}
+                  </FrappeBadge>
+                  <FrappeBadge v-if="e.location" theme="gray" variant="subtle">
+                    {{ e.location }}
+                  </FrappeBadge>
 
-              <!-- Amounts -->
-              <FrappeBadge
-                v-if="isPesa(e.outstandingAmount) && e.outstandingAmount.isPositive()"
-                theme="amber"
-                variant="subtle"
-              >
-                {{ t`Unpaid ${fyo.format(e.outstandingAmount, 'Currency')}` }}
-              </FrappeBadge>
-              <FrappeBadge
-                v-else-if="isPesa(e.grandTotal) && e.grandTotal.isPositive()"
-                theme="green"
-                variant="subtle"
-              >
-                {{ fyo.format(e.grandTotal, 'Currency') }}
-              </FrappeBadge>
-              <FrappeBadge
-                v-else-if="isPesa(e.amount) && e.amount.isPositive()"
-                theme="green"
-                variant="subtle"
-              >
-                {{ fyo.format(e.amount, 'Currency') }}
-              </FrappeBadge>
+                  <!-- Amounts -->
+                  <FrappeBadge
+                    v-if="
+                      isPesa(e.outstandingAmount) && e.outstandingAmount.isPositive()
+                    "
+                    theme="amber"
+                    variant="subtle"
+                  >
+                    {{ t`Unpaid ${fyo.format(e.outstandingAmount, 'Currency')}` }}
+                  </FrappeBadge>
+                  <FrappeBadge
+                    v-else-if="isPesa(e.grandTotal) && e.grandTotal.isPositive()"
+                    theme="green"
+                    variant="subtle"
+                  >
+                    {{ fyo.format(e.grandTotal, 'Currency') }}
+                  </FrappeBadge>
+                  <FrappeBadge
+                    v-else-if="isPesa(e.amount) && e.amount.isPositive()"
+                    theme="green"
+                    variant="subtle"
+                  >
+                    {{ fyo.format(e.amount, 'Currency') }}
+                  </FrappeBadge>
 
-              <!-- Quantities -->
-              <FrappeBadge v-if="e.stockNotTransferred" theme="amber" variant="subtle">
-                {{ t`Pending qty. ${fyo.format(e.stockNotTransferred, 'Float')}` }}
-              </FrappeBadge>
-              <FrappeBadge
-                v-else-if="typeof e.quantity === 'number' && e.quantity"
-                theme="gray"
-                variant="subtle"
-              >
-                {{ t`Qty. ${fyo.format(e.quantity, 'Float')}` }}
-              </FrappeBadge>
-            </div>
-          </FrappeItemListRow>
+                  <!-- Quantities -->
+                  <FrappeBadge
+                    v-if="e.stockNotTransferred"
+                    theme="amber"
+                    variant="subtle"
+                  >
+                    {{ t`Pending qty. ${fyo.format(e.stockNotTransferred, 'Float')}` }}
+                  </FrappeBadge>
+                  <FrappeBadge
+                    v-else-if="typeof e.quantity === 'number' && e.quantity"
+                    theme="gray"
+                    variant="subtle"
+                  >
+                    {{ t`Qty. ${fyo.format(e.quantity, 'Float')}` }}
+                  </FrappeBadge>
+                </div>
+              </FrappeListCell>
+            </FrappeListRow>
+          </FrappeList>
         </div>
       </div>
     </div>
@@ -148,12 +158,15 @@ import { Doc } from 'fyo/model/doc';
 import { isPesa } from 'fyo/utils';
 import {
   Badge as FrappeBadge,
-  ItemListRow as FrappeItemListRow,
+  Button as FrappeButton,
 } from 'frappe-ui';
+import {
+  List as FrappeList,
+  ListCell as FrappeListCell,
+  ListRow as FrappeListRow,
+} from 'frappe-ui/list';
 import { ModelNameEnum } from 'models/types';
-import Button from 'src/components/Button.vue';
 import DisclosureButton from 'src/components/DisclosureButton.vue';
-import Icon from 'src/components/Icon.vue';
 import { getLinkedEntries } from 'src/utils/doc';
 import { shortcutsKey } from 'src/utils/injectionKeys';
 import { getFormRoute, routeTo } from 'src/utils/ui';
@@ -162,7 +175,14 @@ import { PropType, defineComponent, inject } from 'vue';
 const COMPONENT_NAME = 'LinkedEntries';
 
 export default defineComponent({
-  components: { Button, FrappeBadge, DisclosureButton, FrappeItemListRow, Icon },
+  components: {
+    DisclosureButton,
+    FrappeBadge,
+    FrappeButton,
+    FrappeList,
+    FrappeListCell,
+    FrappeListRow,
+  },
   props: { doc: { type: Object as PropType<Doc>, required: true } },
   emits: ['close'],
   setup() {

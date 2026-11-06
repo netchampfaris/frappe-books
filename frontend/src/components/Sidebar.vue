@@ -21,23 +21,58 @@
         >
           {{ companyName }}
         </h6>
+
+        <!-- History Navigation -->
+        <div class="window-no-drag shrink-0 flex items-center gap-0.5">
+          <FrappeButton
+            variant="ghost"
+            size="xs"
+            icon="lucide-chevron-left"
+            :disabled="!historyState.back"
+            :tooltip="t`Back`"
+            :aria-label="t`Back`"
+            @click="$router.back()"
+          />
+          <FrappeButton
+            variant="ghost"
+            size="xs"
+            icon="lucide-chevron-right"
+            :disabled="!historyState.forward"
+            :tooltip="t`Forward`"
+            :aria-label="t`Forward`"
+            @click="$router.forward()"
+          />
+        </div>
       </div>
+
+      <!-- Search -->
+      <SearchBar>
+        <template #trigger="{ open }">
+          <FrappeSidebarItem
+            :label="t`Search`"
+            class="mx-2 mb-0.5"
+            @click="open"
+          >
+            <template #prefix>
+              <NavIcon name="search" />
+            </template>
+            <template #suffix>
+              <FrappeKeyboardShortcut combo="Mod+K" class="mr-2" />
+            </template>
+          </FrappeSidebarItem>
+        </template>
+      </SearchBar>
 
       <!-- Sidebar Items -->
       <div v-for="group in groups" :key="group.label">
         <FrappeSidebarItem
           :label="group.label"
           :active="Boolean(isGroupActive(group) && !group.items)"
-          class="mx-2 mb-1 [&_[data-slot='sidebar-item-suffix']]:hidden"
+          class="mx-2 mb-0.5 [&_[data-slot='sidebar-item-suffix']]:hidden"
           @click="routeToSidebarItem(group)"
         >
           <template #prefix>
-            <Icon
-              :name="group.icon"
-              :size="group.iconSize || '18'"
-              :height="group.iconHeight ?? 0"
-              :active="!!isGroupActive(group)"
-            />
+            <NavIcon :name="group.icon" :active="!!isGroupActive(group)" />
           </template>
         </FrappeSidebarItem>
 
@@ -48,34 +83,34 @@
             :key="item.label"
             :label="item.label"
             :active="Boolean(isItemActive(item))"
-            class="mx-2 mb-1 ps-7"
+            class="mx-2 mb-0.5"
             @click="routeToSidebarItem(item)"
           >
-            <template #prefix><span class="w-0" /></template>
+            <!--
+              Align the sub-item label with its parent's. SidebarItem lays its
+              row out as pl-2 (8px) + prefix + label ml-2 (8px), so a parent
+              label starts at 8 + 18 (NavIcon's default 18px glyph) + 8 = 34px.
+              Substituting a spacer exactly one icon wide keeps the sub-item on
+              the same 34px, which the old `ps-7` (28) + `w-0` prefix missed by
+              2px (28 + 8 + 0 + 8 = 36).
+            -->
+            <template #prefix><span class="w-[18px]" /></template>
           </FrappeSidebarItem>
         </div>
       </div>
     </FrappeScrollArea>
 
     <!-- Report Issue and DB Switcher -->
-    <div class="window-no-drag flex-shrink-0 flex flex-col gap-2 py-2 px-4">
-      <FrappeSidebarItem
-        :label="t`Help`"
-        class="!h-7"
-        @click="openDocumentation"
-      >
+    <div class="window-no-drag flex-shrink-0 flex flex-col gap-0.5 py-2 px-4">
+      <FrappeSidebarItem :label="t`Help`" @click="openDocumentation">
         <template #prefix>
-          <Icon name="help-circle" />
+          <NavIcon name="help-circle" :size="16" />
         </template>
       </FrappeSidebarItem>
 
-      <FrappeSidebarItem
-        :label="t`Shortcuts`"
-        class="!h-7"
-        @click="viewShortcuts = true"
-      >
+      <FrappeSidebarItem :label="t`Shortcuts`" @click="viewShortcuts = true">
         <template #prefix>
-          <Icon name="command" />
+          <NavIcon name="command" :size="16" />
         </template>
       </FrappeSidebarItem>
 
@@ -83,28 +118,27 @@
         v-if="platform !== 'Web'"
         data-testid="change-db"
         :label="t`Change DB`"
-        class="!h-7"
         @click="$emit('change-db-file')"
       >
         <template #prefix>
-          <Icon name="database" />
+          <NavIcon name="database" :size="16" />
         </template>
       </FrappeSidebarItem>
 
       <div class="flex items-center gap-2">
         <FrappeSidebarItem
           :label="t`Report Issue`"
-          class="!h-7 min-w-0 flex-1"
+          class="min-w-0 flex-1"
           @click="() => reportIssue()"
         >
           <template #prefix>
-            <Icon name="flag" />
+            <NavIcon name="flag" :size="16" />
           </template>
         </FrappeSidebarItem>
 
         <FrappeButton
           variant="ghost"
-          icon="lucide-chevrons-left"
+          icon="lucide-panel-left-close"
           :tooltip="t`Hide sidebar`"
           :aria-label="t`Hide sidebar`"
           class="shrink-0 rtl-rotate-180"
@@ -126,6 +160,7 @@
 import {
   Button as FrappeButton,
   Dialog as FrappeDialog,
+  KeyboardShortcut as FrappeKeyboardShortcut,
   ScrollArea as FrappeScrollArea,
   Sidebar as FrappeSidebar,
   SidebarItem as FrappeSidebarItem,
@@ -133,7 +168,7 @@ import {
 import { reportIssue } from 'src/errorHandling';
 import { fyo } from 'src/initFyo';
 import { languageDirectionKey, shortcutsKey } from 'src/utils/injectionKeys';
-import { docsPathRef } from 'src/utils/refs';
+import { docsPathRef, historyState } from 'src/utils/refs';
 import { getSidebarConfig } from 'src/utils/sidebarConfig';
 import {
   getSidebarPath,
@@ -143,7 +178,8 @@ import { SidebarConfig, SidebarItem, SidebarRoot } from 'src/utils/types';
 import { routeTo, toggleSidebar } from 'src/utils/ui';
 import { defineComponent, inject } from 'vue';
 import router from '../router';
-import Icon from './Icon.vue';
+import NavIcon from './NavIcon.vue';
+import SearchBar from './SearchBar.vue';
 import ShortcutsHelper from './ShortcutsHelper.vue';
 
 const COMPONENT_NAME = 'Sidebar';
@@ -152,18 +188,18 @@ export default defineComponent({
   components: {
     FrappeButton,
     FrappeDialog,
+    FrappeKeyboardShortcut,
     FrappeScrollArea,
     FrappeSidebar,
     FrappeSidebarItem,
-    Icon,
+    NavIcon,
+    SearchBar,
     ShortcutsHelper,
   },
-  props: {
-    darkMode: { type: Boolean, default: false },
-  },
-  emits: ['change-db-file', 'toggle-darkmode'],
+  emits: ['change-db-file'],
   setup() {
     return {
+      historyState,
       languageDirection: inject(languageDirectionKey),
       shortcuts: inject(shortcutsKey),
     };
@@ -182,6 +218,22 @@ export default defineComponent({
     };
   },
   async mounted() {
+    // Registered before the awaits below so the shortcuts do not hinge on the
+    // company/config load. The sidebar is never keep-alive'd, so Back binds
+    // here and unbinds in beforeUnmount, not in activated/deactivated as it
+    // did while it lived in the page header.
+    this.shortcuts?.shift.set(COMPONENT_NAME, ['KeyH'], () => {
+      if (document.body === document.activeElement) {
+        this.toggleSidebar();
+      }
+    });
+    this.shortcuts?.set(COMPONENT_NAME, ['F1'], () => this.openDocumentation());
+    this.shortcuts?.shift.set(COMPONENT_NAME, ['Backspace'], () => {
+      if (historyState.back) {
+        this.$router.back();
+      }
+    });
+
     const { companyName } = await fyo.doc.getDoc('AccountingSettings');
     this.companyName = companyName as string;
     this.groups = await getSidebarConfig();
@@ -190,15 +242,8 @@ export default defineComponent({
     router.afterEach(() => {
       this.setActiveGroup();
     });
-
-    this.shortcuts?.shift.set(COMPONENT_NAME, ['KeyH'], () => {
-      if (document.body === document.activeElement) {
-        this.toggleSidebar();
-      }
-    });
-    this.shortcuts?.set(COMPONENT_NAME, ['F1'], () => this.openDocumentation());
   },
-  unmounted() {
+  beforeUnmount() {
     this.shortcuts?.delete(COMPONENT_NAME);
   },
   methods: {

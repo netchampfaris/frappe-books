@@ -65,7 +65,6 @@ function getInventorySidebar(): SidebarRoot[] {
       label: t`Inventory`,
       name: 'inventory',
       icon: 'inventory',
-      iconSize: '18',
       route: '/list/StockMovement',
       items: [
         {
@@ -149,8 +148,6 @@ function getCompleteSidebar(): SidebarConfig {
       name: 'get-started',
       route: '/get-started',
       icon: 'general',
-      iconSize: '24',
-      iconHeight: 5,
       hidden: () => !!fyo.singles.SystemSettings?.hideGetStarted,
     },
     {

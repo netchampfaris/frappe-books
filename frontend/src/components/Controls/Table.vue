@@ -74,7 +74,7 @@
           @click="addRow"
         >
           <FrappeListCell class="justify-center">
-            <Icon name="plus" class="w-4 h-4 text-ink-gray-5" />
+            <Icon name="plus" class="size-4 text-ink-gray-5" />
           </FrappeListCell>
           <FrappeListCell
             class="justify-between px-2"
@@ -97,11 +97,13 @@
         </FrappeListRow>
       </FrappeList>
     </div>
+    <FrappeErrorMessage v-if="error" class="mt-1.5" :message="error" />
   </div>
 </template>
 
 <script>
 import Icon from 'src/components/Icon.vue';
+import { ErrorMessage as FrappeErrorMessage } from 'frappe-ui';
 import {
   List as FrappeList,
   ListCell as FrappeListCell,
@@ -117,6 +119,7 @@ import TableRow from './TableRow.vue';
 export default {
   name: 'Table',
   components: {
+    FrappeErrorMessage,
     FrappeList,
     FrappeListCell,
     FrappeListHeader,

@@ -1,17 +1,11 @@
 <template>
-  <Modal
-    :open-modal="openModal"
+  <Dialog
+    v-model:open="isOpen"
+    :title="t`Invoices`"
     size="2xl"
-    class="flex h-[calc(100vh-6rem)] max-h-[40rem] w-full flex-col p-5"
-    @closemodal="closeModal"
+    :actions="actions"
   >
-    <p class="text-center font-semibold text-ink-gray-5">
-      {{ t`Invoices` }}
-    </p>
-
-    <hr class="mt-2 border-outline-gray-1" />
-
-    <div class="mt-4">
+    <div class="flex h-[calc(100vh-18rem)] max-h-[32rem] min-h-0 flex-col">
       <FrappeTextInput
         v-model="invoiceSearchTerm"
         type="text"
@@ -21,45 +15,29 @@
         size="md"
         @keydown.enter="handleSearchEnter"
       />
-    </div>
 
-    <hr class="mt-2 border-outline-gray-1" />
+      <Divider class="mt-2" />
 
-    <InvoiceSelectionTable
-      v-model="selectedInvoiceName"
-      :rows="paginatedInvoices"
-      :fields="tableFields"
-      :ratios="ratio"
-      :empty-text="t`No invoices found`"
-    />
-
-    <div v-if="filteredInvoices.length" class="mt-1 mb-1">
-      <Paginator
-        :item-count="filteredInvoices.length"
-        :allowed-counts="[20, 40, -1]"
-        @index-change="setPageIndices"
+      <InvoiceSelectionTable
+        v-model="selectedInvoiceName"
+        :rows="paginatedInvoices"
+        :fields="tableFields"
+        :ratios="ratio"
+        :empty-text="t`No invoices found`"
       />
-    </div>
 
-    <div class="mt-2 grid grid-cols-2 gap-3">
-      <Button class="w-full" @click="closeModal">
-        {{ t`Cancel` }}
-      </Button>
-      <Button
-        class="w-full"
-        type="primary"
-        :disabled="!selectedInvoiceName"
-        @click="returnSelectedInvoice"
-      >
-        {{ t`Create Return` }}
-      </Button>
+      <div v-if="filteredInvoices.length" class="mt-1 mb-1">
+        <Paginator
+          :item-count="filteredInvoices.length"
+          :allowed-counts="[20, 40, -1]"
+          @index-change="setPageIndices"
+        />
+      </div>
     </div>
-  </Modal>
+  </Dialog>
 </template>
 
 <script lang="ts">
-import Button from 'src/components/Button.vue';
-import Modal from 'src/components/Modal.vue';
 import InvoiceSelectionTable from 'src/components/POS/InvoiceSelectionTable.vue';
 import { SalesInvoice } from 'models/baseModels/SalesInvoice/SalesInvoice';
 import { defineComponent } from 'vue';
@@ -67,21 +45,26 @@ import { ModelNameEnum } from 'models/types';
 import { Field } from 'schemas/types';
 import { Money } from 'pesa';
 import Paginator from 'src/components/Paginator.vue';
-import { TextInput as FrappeTextInput } from 'frappe-ui';
+import {
+  Dialog,
+  Divider,
+  TextInput as FrappeTextInput,
+  type DialogAction,
+} from 'frappe-ui';
 
 export default defineComponent({
   name: 'ReturnSalesInvoice',
   components: {
-    Modal,
-    Button,
+    Dialog,
+    Divider,
     InvoiceSelectionTable,
     Paginator,
     FrappeTextInput,
   },
   props: {
-    openModal: Boolean,
+    open: Boolean,
   },
-  emits: ['toggleModal', 'selectedReturnInvoice'],
+  emits: ['update:open', 'selectedReturnInvoice'],
   data() {
     return {
       returnedInvoices: [] as SalesInvoice[],
@@ -92,6 +75,33 @@ export default defineComponent({
     };
   },
   computed: {
+    isOpen: {
+      get(): boolean {
+        return this.open;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.closeModal();
+        }
+      },
+    },
+    actions(): DialogAction[] {
+      return [
+        {
+          label: this.t`Cancel`,
+          variant: 'subtle',
+          theme: 'gray',
+          onClick: () => this.closeModal(),
+        },
+        {
+          label: this.t`Create Return`,
+          variant: 'solid',
+          theme: 'gray',
+          disabled: !this.selectedInvoiceName,
+          onClick: () => this.returnSelectedInvoice(),
+        },
+      ];
+    },
     ratio() {
       return [1, 1, 1, 0.8];
     },
@@ -136,7 +146,7 @@ export default defineComponent({
     },
   },
   watch: {
-    async openModal(newVal) {
+    async open(newVal) {
       if (newVal) {
         this.selectedInvoiceName = '';
         await this.setReturnedInvoices();
@@ -158,7 +168,7 @@ export default defineComponent({
   methods: {
     closeModal() {
       this.selectedInvoiceName = '';
-      this.$emit('toggleModal', 'ReturnSalesInvoice');
+      this.$emit('update:open', false);
     },
     returnSelectedInvoice() {
       if (!this.selectedInvoiceName) {

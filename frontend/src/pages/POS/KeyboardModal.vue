@@ -1,55 +1,26 @@
 <template>
-  <Modal
-    :open-modal="modalStatus"
+  <Dialog
+    v-model:open="isOpen"
+    :title="modalTitle"
     size="sm"
-    @closemodal="closeKeyboardModal"
+    :actions="actions"
   >
-    <div class="flex max-h-[calc(100vh-2rem)] flex-col">
-      <header class="border-b border-outline-gray-1 px-6 py-4">
-        <h2 class="text-lg font-semibold text-ink-gray-9">
-          {{ modalTitle }}
-        </h2>
-        <p class="pt-1 text-sm text-ink-gray-5">
-          {{ t`Use the keypad or type a value.` }}
-        </p>
-      </header>
+    <p class="text-p-base text-ink-gray-5">
+      {{ t`Use the keypad or type a value.` }}
+    </p>
 
-      <div class="overflow-y-auto px-6 py-5">
-        <NumericKeypad
-          ref="keypad"
-          v-model="selectedValue"
-          :label="fieldLabel"
-          :error="validationError"
-          :disabled="saving"
-          @submit="saveSelectedItem"
-          @cancel="closeKeyboardModal"
-        />
-      </div>
-
-      <footer
-        class="grid grid-cols-2 gap-3 border-t border-outline-gray-1 px-6 py-4"
-      >
-        <Button
-          class="w-full"
-          :disabled="saving"
-          size="lg"
-          @click="closeKeyboardModal"
-        >
-          {{ t`Cancel` }}
-        </Button>
-        <Button
-          class="w-full"
-          type="primary"
-          size="lg"
-          :disabled="saving"
-          :loading="saving"
-          @click="saveSelectedItem"
-        >
-          {{ t`Save` }}
-        </Button>
-      </footer>
+    <div class="mt-4 max-h-[calc(100vh-20rem)] overflow-y-auto">
+      <NumericKeypad
+        ref="keypad"
+        v-model="selectedValue"
+        :label="fieldLabel"
+        :error="validationError"
+        :disabled="saving"
+        @submit="saveSelectedItem"
+        @cancel="closeKeyboardModal"
+      />
     </div>
-  </Modal>
+  </Dialog>
 </template>
 
 <script lang="ts">
@@ -60,8 +31,7 @@ import { SalesInvoiceItem } from 'models/baseModels/SalesInvoiceItem/SalesInvoic
 import { validateQty } from 'models/helpers';
 import { ModelNameEnum } from 'models/types';
 import { Money } from 'pesa';
-import Button from 'src/components/Button.vue';
-import Modal from 'src/components/Modal.vue';
+import { Dialog, type DialogAction } from 'frappe-ui';
 import NumericKeypad from 'src/components/POS/NumericKeypad.vue';
 import { parseNumericDraft } from 'src/components/POS/numericKeypad';
 import { getErrorMessage } from 'src/utils';
@@ -84,9 +54,9 @@ type ItemSnapshot = {
 
 export default defineComponent({
   name: 'KeyboardModal',
-  components: { Button, Modal, NumericKeypad },
+  components: { Dialog, NumericKeypad },
   props: {
-    modalStatus: Boolean,
+    open: Boolean,
     selectedItemRow: { type: SalesInvoiceItem, required: true },
     selectedItemField: { type: String, default: '' },
     applyPricingRuleAction: {
@@ -94,7 +64,7 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ['toggleModal'],
+  emits: ['update:open'],
   setup() {
     return { sinvDoc: inject('sinvDoc') as SalesInvoice };
   },
@@ -106,6 +76,34 @@ export default defineComponent({
     };
   },
   computed: {
+    isOpen: {
+      get(): boolean {
+        return this.open;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.closeKeyboardModal();
+        }
+      },
+    },
+    actions(): DialogAction[] {
+      return [
+        {
+          label: this.t`Cancel`,
+          variant: 'subtle',
+          theme: 'gray',
+          disabled: this.saving,
+          onClick: () => this.closeKeyboardModal(),
+        },
+        {
+          label: this.t`Save`,
+          variant: 'solid',
+          theme: 'gray',
+          disabled: this.saving,
+          onClick: () => this.saveSelectedItem(),
+        },
+      ];
+    },
     fieldLabel(): string {
       return (
         (this.selectedItemRow?.fieldMap[this.selectedItemField]?.label as string) ||
@@ -126,7 +124,7 @@ export default defineComponent({
     },
   },
   watch: {
-    async modalStatus(isOpen) {
+    async open(isOpen) {
       if (!isOpen) {
         return;
       }
@@ -137,7 +135,7 @@ export default defineComponent({
     },
   },
   async mounted() {
-    if (!this.modalStatus) {
+    if (!this.open) {
       return;
     }
 
@@ -165,7 +163,7 @@ export default defineComponent({
       try {
         await this.applyValue(row, fieldname, value);
         await this.sinvDoc.runFormulas();
-        this.$emit('toggleModal', 'Keyboard');
+        this.$emit('update:open', false);
       } catch (error) {
         await this.rollback(row, fieldname, snapshot);
         this.validationError = getErrorMessage(error as Error, row);
@@ -296,7 +294,7 @@ export default defineComponent({
     },
     closeKeyboardModal() {
       this.validationError = '';
-      this.$emit('toggleModal', 'Keyboard');
+      this.$emit('update:open', false);
     },
   },
 });

@@ -1,13 +1,7 @@
 <template>
   <div class="flex flex-col overflow-y-hidden">
     <PageHeader :title="t`Set Up Your Workspace`" />
-    <div
-      class="
-        flex-1
-        overflow-y-auto overflow-x-hidden
-        custom-scroll custom-scroll-thumb1
-      "
-    >
+    <FrappeScrollArea class="min-h-0 flex-1">
       <div
         v-for="section in sections"
         :key="section.label"
@@ -54,34 +48,35 @@
                 v-show="activeCard === item.key && !isCompleted(item)"
                 class="flex mt-2 overflow-hidden"
               >
-                <Button
+                <FrappeButton
                   v-if="item.action"
-                  class="leading-tight text-base"
-                  type="primary"
+                  variant="solid"
+                  theme="gray"
+                  :label="t`Set Up`"
                   @click="handleAction(item)"
-                >
-                  {{ t`Set Up` }}
-                </Button>
-                <Button
+                />
+                <FrappeButton
                   v-if="item.documentation"
-                  class="leading-tight text-base"
+                  variant="subtle"
                   :class="{ 'ms-4': item.action }"
+                  :label="t`Documentation`"
                   @click="handleDocumentation(item)"
-                >
-                  {{ t`Documentation` }}
-                </Button>
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </FrappeScrollArea>
   </div>
 </template>
 
 <script lang="ts">
 import { DocValue } from 'fyo/core/types';
-import Button from 'src/components/Button.vue';
+import {
+  Button as FrappeButton,
+  ScrollArea as FrappeScrollArea,
+} from 'frappe-ui';
 import Icon from 'src/components/Icon.vue';
 import PageHeader from 'src/components/PageHeader.vue';
 import { fyo } from 'src/initFyo';
@@ -95,11 +90,9 @@ export default defineComponent({
   name: 'GetStarted',
   components: {
     PageHeader,
-    Button,
+    FrappeButton,
+    FrappeScrollArea,
     Icon,
-  },
-  props: {
-    darkMode: { type: Boolean, default: false },
   },
   data() {
     return {

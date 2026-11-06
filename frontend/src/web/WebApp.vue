@@ -32,7 +32,7 @@
         @setup-complete="completeSetup"
         @setup-canceled="leaveBooks"
       />
-      <Desk v-else class="flex-1" :dark-mode="darkMode" />
+      <Desk v-else class="flex-1" />
     </div>
   </FrappeUIProvider>
 </template>
@@ -92,7 +92,6 @@ export default defineComponent({
     return {
       loading: true,
       needsSetup: false,
-      darkMode: false,
       startupError: '',
     };
   },
@@ -135,8 +134,7 @@ export default defineComponent({
         }
       }
       this.needsSetup = !fyo.singles.AccountingSettings?.setupComplete;
-      this.darkMode = Boolean(fyo.singles.SystemSettings?.darkMode);
-      setDarkMode(this.darkMode);
+      setDarkMode(Boolean(fyo.singles.SystemSettings?.darkMode));
       if (!this.needsSetup) {
         this.searcher = new Search(fyo);
         await this.searcher.initializeKeywords();

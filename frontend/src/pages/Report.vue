@@ -11,14 +11,15 @@
       >
         {{ group.group }}
       </DropdownWithActions>
-      <Button
+      <FrappeButton
         ref="printButton"
-        :icon="true"
-        :title="t`Open Report Print View`"
+        icon="lucide-printer"
+        variant="ghost"
+        size="md"
+        :tooltip="t`Open Report Print View`"
+        :aria-label="t`Open Report Print View`"
         @click="routeTo(`/report-print/${reportClassName}`)"
-      >
-        <Icon name="printer" class="w-4 h-4" />
-      </Button>
+      />
     </PageHeader>
 
     <!-- Filters -->
@@ -54,12 +55,11 @@
 <script lang="ts">
 import { t } from 'fyo';
 import { DocValue } from 'fyo/core/types';
+import { Button as FrappeButton } from 'frappe-ui';
 import { reports } from 'reports';
 import { Report } from 'reports/Report';
-import Button from 'src/components/Button.vue';
 import FormControl from 'src/components/Controls/FormControl.vue';
 import DropdownWithActions from 'src/components/DropdownWithActions.vue';
-import Icon from 'src/components/Icon.vue';
 import PageHeader from 'src/components/PageHeader.vue';
 import ListReport from 'src/components/Report/ListReport.vue';
 import { fyo } from 'src/initFyo';
@@ -76,8 +76,7 @@ export default defineComponent({
     FormControl,
     ListReport,
     DropdownWithActions,
-    Button,
-    Icon,
+    FrappeButton,
   },
   provide() {
     return {

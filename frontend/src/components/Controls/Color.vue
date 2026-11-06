@@ -10,6 +10,7 @@
     :required="isRequired"
     :size="size"
     :container-styles="containerStyles"
+    :error="error"
   >
     <template v-if="value" #trailing>
       <span
@@ -20,21 +21,27 @@
     </template>
   </ReadOnlyValue>
   <div v-else>
-    <div v-if="showLabel" :class="labelClasses">
-      {{ df.label }}
-    </div>
+    <FrappeFormLabel
+      v-if="showLabel"
+      size="md"
+      class="mb-1.5"
+      :label="df.label"
+      :required="isRequired"
+    />
     <Popover placement="bottom-end">
       <template #target>
         <FrappeButton
           :variant="frappeVariant"
           :size="frappeSize"
           :aria-label="df.label"
+          :aria-invalid="error ? 'true' : undefined"
           class="w-full !justify-start text-base"
+          :class="error ? '!border !border-outline-red-3' : ''"
         >
           <div class="flex items-center">
             <div
               v-if="value"
-              class="w-3 h-3 rounded-2 me-1"
+              class="size-3 rounded-2 me-1"
               :style="{ backgroundColor: normalizedColor }"
             ></div>
             <span v-if="value">
@@ -57,11 +64,11 @@
               class="!size-7 !min-w-0 !p-0"
               :class="
                 normalizedColor.toLowerCase() === color.value.toLowerCase()
-                  ? 'ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-gray-850'
+                  ? 'ring-2 ring-outline-gray-5 ring-offset-2 ring-offset-[var(--surface-base)]'
                   : ''
               "
               :style="{ backgroundColor: color.value }"
-              :title="color.label"
+              :tooltip="color.label"
               :aria-label="color.label"
               @click="setColorValue(color.value)"
             />
@@ -72,7 +79,7 @@
           >
             <input
               type="color"
-              class="color-swatch h-7 w-7 flex-shrink-0 cursor-pointer"
+              class="color-swatch size-7 flex-shrink-0 cursor-pointer"
               :value="normalizedColor"
               :title="t`Choose color`"
               :aria-label="t`Choose color`"
@@ -89,12 +96,15 @@
         </div>
       </template>
     </Popover>
+    <FrappeErrorMessage v-if="error" class="mt-1.5" :message="error" />
   </div>
 </template>
 
 <script>
 import {
   Button as FrappeButton,
+  ErrorMessage as FrappeErrorMessage,
+  FormLabel as FrappeFormLabel,
   TextInput as FrappeTextInput,
 } from 'frappe-ui';
 import Popover from 'src/components/Popover.vue';
@@ -107,6 +117,8 @@ export default {
     Popover,
     ReadOnlyValue,
     FrappeButton,
+    FrappeErrorMessage,
+    FrappeFormLabel,
     FrappeTextInput,
   },
   extends: Base,

@@ -51,8 +51,6 @@ export interface SidebarRoot {
   name: string;
   route: string;
   icon: string;
-  iconSize?: string;
-  iconHeight?: number;
   hidden?: () => boolean;
   items?: SidebarItem[];
   filters?: QueryFilter;

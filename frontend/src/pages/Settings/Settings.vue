@@ -1,55 +1,77 @@
 <template>
-  <FormContainer>
-    <template #header>
-      <Button v-if="canSave" type="primary" @click="sync">
-        {{ t`Save` }}
-      </Button>
-    </template>
-    <template #body>
-      <FormHeader
-        :form-title="tabLabels[activeTab] ?? ''"
-        :form-sub-title="t`Settings`"
-        class="sticky top-0 bg-surface-base border-b border-outline-gray-1"
-      >
-      </FormHeader>
+  <FrappeSettingsDialog
+    v-model:tab="activeTab"
+    :open="isOpen"
+    :shortcut="false"
+    @update:open="onOpenChange"
+  >
+    <template #title>{{ t`Settings` }}</template>
 
-      <!-- Section Container -->
-      <div v-if="doc" class="overflow-auto custom-scroll custom-scroll-thumb1">
-        <CommonFormSection
-          v-for="([name, fields], idx) in activeGroup.entries()"
-          :key="name + idx"
-          ref="section"
-          class="p-4"
-          :class="idx !== 0 && activeGroup.size > 1 ? 'border-t border-outline-gray-1' : ''"
-          :show-title="activeGroup.size > 1 && name !== t`Default`"
-          :title="name"
-          :fields="fields"
-          :doc="doc"
-          :errors="errors"
-          @value-change="onValueChange"
-        />
-      </div>
+    <FrappeSettingsSidebar>
+      <FrappeSettingsNavGroup>
+        <FrappeSettingsNavItem
+          v-for="tab of tabOptions"
+          :key="tab.value"
+          :value="tab.value"
+        >
+          {{ tab.label }}
+        </FrappeSettingsNavItem>
+      </FrappeSettingsNavGroup>
+    </FrappeSettingsSidebar>
 
-      <!-- Tab Bar -->
-      <div
-        v-if="groupedFields && groupedFields.size > 1"
-        class="sticky bottom-0 mt-auto flex-shrink-0 border-t bg-surface-base p-4 border-outline-gray-1"
+    <FrappeSettingsContent>
+      <FrappeSettingsPanel
+        v-for="tab of tabOptions"
+        :key="tab.value"
+        :value="tab.value"
       >
-        <FrappeTabButtons v-model="activeTab" :options="tabOptions" variant="underline" />
-      </div>
-    </template>
-  </FormContainer>
+        <FrappeSettingsHeader :title="tab.label">
+          <template #actions>
+            <FrappeButton
+              v-if="canSave"
+              variant="solid"
+              theme="gray"
+              :label="t`Save`"
+              @click="sync"
+            />
+          </template>
+        </FrappeSettingsHeader>
+
+        <FrappeSettingsBody v-if="doc">
+          <CommonFormSection
+            v-for="([name, fields], idx) in sectionsFor(tab.value).entries()"
+            :key="name + idx"
+            ref="section"
+            class="mt-6"
+            :show-title="sectionsFor(tab.value).size > 1 && name !== t`Default`"
+            :title="name"
+            :fields="fields"
+            :doc="doc"
+            :errors="errors"
+            @value-change="onValueChange"
+          />
+        </FrappeSettingsBody>
+      </FrappeSettingsPanel>
+    </FrappeSettingsContent>
+  </FrappeSettingsDialog>
 </template>
 <script lang="ts">
 import { DocValue } from 'fyo/core/types';
 import { Doc } from 'fyo/model/doc';
 import { ValidationError } from 'fyo/utils/errors';
-import { TabButtons as FrappeTabButtons } from 'frappe-ui';
+import {
+  Button as FrappeButton,
+  SettingsBody as FrappeSettingsBody,
+  SettingsContent as FrappeSettingsContent,
+  SettingsDialog as FrappeSettingsDialog,
+  SettingsHeader as FrappeSettingsHeader,
+  SettingsNavGroup as FrappeSettingsNavGroup,
+  SettingsNavItem as FrappeSettingsNavItem,
+  SettingsPanel as FrappeSettingsPanel,
+  SettingsSidebar as FrappeSettingsSidebar,
+} from 'frappe-ui';
 import { ModelNameEnum } from 'models/types';
 import { Field, Schema } from 'schemas/types';
-import Button from 'src/components/Button.vue';
-import FormContainer from 'src/components/FormContainer.vue';
-import FormHeader from 'src/components/FormHeader.vue';
 import { handleErrorWithDialog } from 'src/errorHandling';
 import { getErrorMessage } from 'src/utils';
 import { evaluateHidden } from 'src/utils/doc';
@@ -65,11 +87,16 @@ const COMPONENT_NAME = 'Settings';
 
 export default defineComponent({
   components: {
-    FormContainer,
-    Button,
-    FormHeader,
     CommonFormSection,
-    FrappeTabButtons,
+    FrappeButton,
+    FrappeSettingsBody,
+    FrappeSettingsContent,
+    FrappeSettingsDialog,
+    FrappeSettingsHeader,
+    FrappeSettingsNavGroup,
+    FrappeSettingsNavItem,
+    FrappeSettingsPanel,
+    FrappeSettingsSidebar,
   },
   provide() {
     return { doc: computed(() => this.doc) };
@@ -84,10 +111,20 @@ export default defineComponent({
       errors: {},
       activeTab: ModelNameEnum.AccountingSettings,
       groupedFields: null,
+      // Settings is a keep-alive route, so the dialog follows the route: it
+      // opens when the page activates and closes when it deactivates. Without
+      // this the teleported dialog would outlive the page it belongs to.
+      isOpen: false,
+      // Where dismissing the dialog goes. `router.back()` would do for a
+      // sidebar click, but /settings can also be opened as the first route,
+      // and then the previous history entry is outside the app.
+      returnTo: '/',
     } as {
       errors: Record<string, string>;
       activeTab: string;
       groupedFields: null | UIGroupedFields;
+      isOpen: boolean;
+      returnTo: string;
     };
   },
   computed: {
@@ -170,7 +207,14 @@ export default defineComponent({
 
     this.update();
   },
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      const settings = vm as unknown as { returnTo: string };
+      settings.returnTo = from.name ? from.fullPath : '/';
+    });
+  },
   activated(): void {
+    this.isOpen = true;
     const tab = this.$route.query.tab;
     if (typeof tab === 'string' && this.tabLabels[tab]) {
       this.activeTab = tab;
@@ -186,6 +230,7 @@ export default defineComponent({
     });
   },
   async deactivated(): Promise<void> {
+    this.isOpen = false;
     docsPathRef.value = '';
     this.shortcuts?.delete(COMPONENT_NAME);
     if (!this.canSave) {
@@ -194,6 +239,18 @@ export default defineComponent({
     await this.reset();
   },
   methods: {
+    sectionsFor(schemaName: string): Map<string, Field[]> {
+      return this.groupedFields?.get(schemaName) ?? new Map();
+    },
+    onOpenChange(open: boolean): void {
+      if (open) {
+        return;
+      }
+
+      // Dismissing the dialog leaves the settings route, which is what runs
+      // `deactivated` and rolls back anything unsaved.
+      void this.$router.push(this.returnTo);
+    },
     async reset() {
       const resetableDocs = this.schemas
         .map(({ name }) => this.fyo.singles[name])

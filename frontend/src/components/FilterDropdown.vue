@@ -6,19 +6,11 @@
     @close="emitFilterChange"
   >
     <template #target>
-      <Button>
-        <span class="flex items-center">
-          <Icon name="filter" size="12" class="stroke-current text-ink-gray-7" />
-          <span class="ms-1">
-            <template v-if="activeFilterCount > 0">
-              {{ filterAppliedMessage }}
-            </template>
-            <template v-else>
-              {{ t`Filter` }}
-            </template>
-          </span>
-        </span>
-      </Button>
+      <FrappeButton
+        variant="subtle"
+        icon-left="lucide-filter"
+        :label="activeFilterCount > 0 ? filterAppliedMessage : t`Filter`"
+      />
     </template>
     <template #content>
       <div>
@@ -137,10 +129,8 @@ import { Button as FrappeButton } from 'frappe-ui';
 import { fyo } from 'src/initFyo';
 import { getRandomString } from 'utils';
 import { defineComponent } from 'vue';
-import Button from './Button.vue';
 import Data from './Controls/Data.vue';
 import Select from './Controls/Select.vue';
-import Icon from './Icon.vue';
 import Popover from './Popover.vue';
 import { QueryFilter } from 'utils/db/types';
 import { t } from 'fyo';
@@ -199,8 +189,6 @@ export default defineComponent({
   name: 'FilterDropdown',
   components: {
     Popover,
-    Button,
-    Icon,
     Select,
     Data,
     FrappeButton,

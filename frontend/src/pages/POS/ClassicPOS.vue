@@ -2,59 +2,46 @@
   <div>
     <OpenPOSShiftModal
       v-if="!isPosShiftOpen"
-      :open-modal="!isPosShiftOpen"
-      @toggle-modal="emitEvent('toggleModal', 'ShiftOpen')"
+      v-model:open="isShiftOpenModalOpen"
     />
 
-    <ClosePOSShiftModal
-      :open-modal="openShiftCloseModal"
-      @toggle-modal="emitEvent('toggleModal', 'ShiftClose', false)"
-    />
+    <ClosePOSShiftModal v-model:open="isShiftCloseModalOpen" />
 
     <LoyaltyProgramModal
-      :open-modal="openLoyaltyProgramModal"
+      v-model:open="isLoyaltyProgramModalOpen"
       :loyalty-points="loyaltyPoints"
       :loyalty-program="loyaltyProgram"
-      @toggle-modal="emitEvent('toggleModal', 'LoyaltyProgram', false)"
       @set-loyalty-points="(points) => emitEvent('setLoyaltyPoints', points)"
     />
 
     <BatchSelectionModal
-      :open-modal="openBatchSelectionModal"
+      v-model:open="isBatchSelectionModalOpen"
       :item-code="selectedItemForBatch"
-      @toggle-modal="emitEvent('toggleModal', 'BatchSelection', false)"
       @batch-selected="(batch) => emitEvent('batchSelected', batch)"
     />
 
     <SavedInvoiceModal
-      :open-modal="openSavedInvoiceModal"
-      @toggle-modal="emitEvent('toggleModal', 'SavedInvoice', false)"
+      v-model:open="isSavedInvoiceModalOpen"
       @selected-invoice-name="
         (invName) => emitEvent('selectedInvoiceName', invName)
       "
     />
 
     <CouponCodeModal
-      :open-modal="openCouponCodeModal"
+      v-model:open="isCouponCodeModalOpen"
       @apply-pricing-rule="emitEvent('applyPricingRule')"
-      @toggle-modal="emitEvent('toggleModal', 'CouponCode', false)"
       @set-coupons-count="(count) => emitEvent('setCouponsCount', count)"
     />
 
-    <PriceListModal
-      :open-modal="openPriceListModal"
-      @toggle-modal="emitEvent('toggleModal', 'PriceList', false)"
-    />
+    <PriceListModal v-model:open="isPriceListModalOpen" />
 
     <ItemEnquiryModal
-      :open-modal="openItemEnquiryModal"
+      v-model:open="isItemEnquiryModalOpen"
       :customer="sinvDoc?.party"
-      @toggle-modal="emitEvent('toggleModal', 'ItemEnquiry', false)"
     />
 
     <PaymentModal
-      :open-modal="openPaymentModal"
-      @toggle-modal="emitEvent('toggleModal', 'Payment', false)"
+      v-model:open="isPaymentModalOpen"
       @set-paid-amount="(amount: Money) => emitEvent('setPaidAmount', amount)"
       @set-payment-method="
         (paymentMethod) => emitEvent('setPaymentMethod', paymentMethod)
@@ -69,16 +56,14 @@
     />
 
     <ReturnSalesInvoiceModal
-      :open-modal="openReturnSalesInvoiceModal"
+      v-model:open="isReturnSalesInvoiceModalOpen"
       @selected-return-invoice="
         (value: any) => emitEvent('selectedReturnInvoice', value)
       "
-      @toggle-modal="emitEvent('toggleModal', 'ReturnSalesInvoice', false)"
     />
 
     <AlertModal
-      :open-modal="openAlertModal"
-      @toggle-modal="emitEvent('toggleModal', 'Alert', false)"
+      v-model:open="isAlertModalOpen"
       @save-and-continue="(value: any) => emitEvent('saveAndContinue', value)"
     />
 
@@ -263,31 +248,25 @@
                 <div class="grid w-full min-w-0 grid-cols-2 gap-2">
                   <Button
                     size="lg"
+                    variant="solid"
+                    theme="gray"
                     class="w-full min-w-0"
-                    :style="{
-                      backgroundColor:
-                        profile?.saveButtonColour ||
-                        fyo.singles.Defaults?.saveButtonColour,
-                    }"
+                    :class="customButtonClass(saveButtonColour)"
+                    :style="customButtonStyle(saveButtonColour)"
                     @click="$emit('saveInvoiceAction')"
                   >
-                    <slot>
-                      <span>{{ t`Save` }}</span>
-                    </slot>
+                    <span>{{ t`Save` }}</span>
                   </Button>
                   <Button
                     size="lg"
+                    variant="solid"
+                    theme="gray"
                     class="w-full min-w-0"
-                    :style="{
-                      backgroundColor:
-                        profile?.cancelButtonColour ||
-                        fyo.singles.Defaults?.cancelButtonColour,
-                    }"
+                    :class="customButtonClass(cancelButtonColour)"
+                    :style="customButtonStyle(cancelButtonColour)"
                     @click="() => $emit('clearValues')"
                   >
-                    <slot>
-                      <span>{{ t`Cancel` }}</span>
-                    </slot>
+                    <span>{{ t`Cancel` }}</span>
                   </Button>
                 </div>
                 <div
@@ -296,66 +275,52 @@
                 >
                   <Button
                     size="lg"
+                    variant="solid"
+                    theme="gray"
                     class="w-full min-w-0"
-                    :style="{
-                      backgroundColor:
-                        profile?.heldButtonColour ||
-                        fyo.singles.Defaults?.heldButtonColour,
-                    }"
+                    :class="customButtonClass(heldButtonColour)"
+                    :style="customButtonStyle(heldButtonColour)"
                     @click="emitEvent('toggleModal', 'SavedInvoice', true)"
                   >
-                    <slot>
-                      <span>{{ t`held` }}</span>
-                    </slot>
+                    <span>{{ t`held` }}</span>
                   </Button>
 
                   <Button
-                    size="lg"
                     v-if="isReturnInvoiceEnabledReturn"
+                    size="lg"
+                    variant="solid"
+                    theme="gray"
                     class="w-full min-w-0"
-                    :style="{
-                      backgroundColor:
-                        profile?.returnButtonColour ||
-                        fyo.singles.Defaults?.returnButtonColour,
-                    }"
-                    @click="
-                      emitEvent('toggleModal', 'ReturnSalesInvoice', true)
-                    "
+                    :class="customButtonClass(returnButtonColour)"
+                    :style="customButtonStyle(returnButtonColour)"
+                    @click="emitEvent('toggleModal', 'ReturnSalesInvoice', true)"
                   >
-                    <slot>
-                      <span>{{ t`Return` }}</span>
-                    </slot>
+                    <span>{{ t`Return` }}</span>
                   </Button>
                   <Button
-                    size="lg"
                     v-else
+                    size="lg"
+                    variant="solid"
+                    theme="gray"
                     class="w-full min-w-0"
-                    :style="{
-                      backgroundColor:
-                        profile?.payButtonColour ||
-                        fyo.singles.Defaults?.payButtonColour,
-                    }"
+                    :class="customButtonClass(payButtonColour)"
+                    :style="customButtonStyle(payButtonColour)"
                     @click="emitEvent('handlePaymentAction')"
                   >
-                    <slot>
-                      <span>{{ t`Pay` }}</span>
-                    </slot>
+                    <span>{{ t`Pay` }}</span>
                   </Button>
                 </div>
                 <Button
-                  size="lg"
                   v-if="isReturnInvoiceEnabledReturn"
+                  size="lg"
+                  variant="solid"
+                  theme="gray"
                   class="w-full mt-2"
-                  :style="{
-                    backgroundColor:
-                      profile?.payButtonColour ||
-                      fyo.singles.Defaults?.payButtonColour,
-                  }"
+                  :class="customButtonClass(payButtonColour)"
+                  :style="customButtonStyle(payButtonColour)"
                   @click="emitEvent('handlePaymentAction')"
                 >
-                  <slot>
-                    <span>{{ t`Pay` }}</span>
-                  </slot>
+                  <span>{{ t`Pay` }}</span>
                 </Button>
               </div>
             </div>
@@ -372,7 +337,8 @@ import { fyo } from 'src/initFyo';
 import { getItem } from 'src/utils/pos';
 import AlertModal from './AlertModal.vue';
 import PaymentModal from './PaymentModal.vue';
-import Button from 'src/components/Button.vue';
+import { Button } from 'frappe-ui';
+import { getButtonTextColor } from 'src/utils/button';
 import { defineComponent, PropType } from 'vue';
 import PriceListModal from './PriceListModal.vue';
 import ItemEnquiryModal from './ItemEnquiryModal.vue';
@@ -541,6 +507,146 @@ export default defineComponent({
   computed: {
     isReturnInvoiceEnabledReturn: () =>
       fyo.singles.AccountingSettings?.enableInvoiceReturns ?? undefined,
+    isShiftOpenModalOpen: {
+      get(): boolean {
+        return !this.isPosShiftOpen;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.emitEvent('toggleModal', 'ShiftOpen');
+        }
+      },
+    },
+    isShiftCloseModalOpen: {
+      get(): boolean {
+        return this.openShiftCloseModal;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.emitEvent('toggleModal', 'ShiftClose', false);
+        }
+      },
+    },
+    isLoyaltyProgramModalOpen: {
+      get(): boolean {
+        return this.openLoyaltyProgramModal;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.emitEvent('toggleModal', 'LoyaltyProgram', false);
+        }
+      },
+    },
+    isBatchSelectionModalOpen: {
+      get(): boolean {
+        return this.openBatchSelectionModal;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.emitEvent('toggleModal', 'BatchSelection', false);
+        }
+      },
+    },
+    isSavedInvoiceModalOpen: {
+      get(): boolean {
+        return this.openSavedInvoiceModal;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.emitEvent('toggleModal', 'SavedInvoice', false);
+        }
+      },
+    },
+    isCouponCodeModalOpen: {
+      get(): boolean {
+        return this.openCouponCodeModal;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.emitEvent('toggleModal', 'CouponCode', false);
+        }
+      },
+    },
+    isPriceListModalOpen: {
+      get(): boolean {
+        return this.openPriceListModal;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.emitEvent('toggleModal', 'PriceList', false);
+        }
+      },
+    },
+    isItemEnquiryModalOpen: {
+      get(): boolean {
+        return this.openItemEnquiryModal;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.emitEvent('toggleModal', 'ItemEnquiry', false);
+        }
+      },
+    },
+    isPaymentModalOpen: {
+      get(): boolean {
+        return this.openPaymentModal;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.emitEvent('toggleModal', 'Payment', false);
+        }
+      },
+    },
+    isReturnSalesInvoiceModalOpen: {
+      get(): boolean {
+        return this.openReturnSalesInvoiceModal;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.emitEvent('toggleModal', 'ReturnSalesInvoice', false);
+        }
+      },
+    },
+    isAlertModalOpen: {
+      get(): boolean {
+        return this.openAlertModal;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.emitEvent('toggleModal', 'Alert', false);
+        }
+      },
+    },
+    saveButtonColour(): string | undefined {
+      return resolveColour(
+        this.profile?.saveButtonColour,
+        fyo.singles.Defaults?.saveButtonColour
+      );
+    },
+    cancelButtonColour(): string | undefined {
+      return resolveColour(
+        this.profile?.cancelButtonColour,
+        fyo.singles.Defaults?.cancelButtonColour
+      );
+    },
+    heldButtonColour(): string | undefined {
+      return resolveColour(
+        this.profile?.heldButtonColour,
+        fyo.singles.Defaults?.heldButtonColour
+      );
+    },
+    returnButtonColour(): string | undefined {
+      return resolveColour(
+        this.profile?.returnButtonColour,
+        fyo.singles.Defaults?.returnButtonColour
+      );
+    },
+    payButtonColour(): string | undefined {
+      return resolveColour(
+        this.profile?.payButtonColour,
+        fyo.singles.Defaults?.payButtonColour
+      );
+    },
   },
   methods: {
     emitEvent(
@@ -549,7 +655,53 @@ export default defineComponent({
     ) {
       this.$emit(eventName, ...args);
     },
+    // POS profiles (and the Defaults single) can override the colour of the
+    // action buttons. The colour drives two CSS variables consumed by the
+    // scoped `.pos-custom-button` rules below, which also derive the hover and
+    // active shades; `getButtonTextColor` picks a readable foreground.
+    customButtonClass(colour?: string): string | undefined {
+      return isCustomColour(colour) ? 'pos-custom-button' : undefined;
+    },
+    customButtonStyle(colour?: string): Record<string, string> | undefined {
+      if (!isCustomColour(colour)) {
+        return undefined;
+      }
+
+      return {
+        '--pos-button-background': colour,
+        '--pos-button-foreground': getButtonTextColor(colour),
+      };
+    },
     getItem,
   },
 });
+
+function resolveColour(...values: unknown[]): string | undefined {
+  for (const value of values) {
+    if (typeof value === 'string' && value) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
+function isCustomColour(colour?: string): colour is string {
+  return /^#[0-9a-f]{6}$/i.test(colour ?? '');
+}
 </script>
+
+<style scoped>
+.pos-custom-button:not(:disabled) {
+  background-color: var(--pos-button-background);
+  color: var(--pos-button-foreground);
+}
+
+.pos-custom-button:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--pos-button-background), black 8%);
+}
+
+.pos-custom-button:not(:disabled):active {
+  background-color: color-mix(in srgb, var(--pos-button-background), black 14%);
+}
+</style>

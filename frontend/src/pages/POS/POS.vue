@@ -3,8 +3,8 @@
     <PageHeader :title="t`Point of Sale`">
       <slot>
         <Button
+          variant="solid"
           theme="red"
-          type="primary"
           @click="toggleModal('ShiftClose')"
         >
           <span>{{ t`Close POS Shift ` }}</span>
@@ -146,7 +146,7 @@ import { fyo } from 'src/initFyo';
 import ModernPOS from './ModernPOS.vue';
 import ClassicPOS from './ClassicPOS.vue';
 import { ModelNameEnum } from 'models/types';
-import Button from 'src/components/Button.vue';
+import { Button } from 'frappe-ui';
 import { showToast } from 'src/utils/interactive';
 import { Item } from 'models/baseModels/Item/Item';
 import { Shipment } from 'models/inventory/Shipment';

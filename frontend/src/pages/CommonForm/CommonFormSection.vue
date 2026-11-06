@@ -36,6 +36,7 @@
           :show-label="true"
           :border="true"
           :df="field"
+          :error="errors?.[field.fieldname]"
           :value="tableValue(doc[field.fieldname])"
           @editrow="(doc: Doc) => $emit('editrow', doc)"
           @change="(value: DocValue) => $emit('value-change', field, value)"
@@ -52,6 +53,7 @@
           :show-label="true"
           :border="true"
           :df="field"
+          :error="errors?.[field.fieldname]"
           :value="doc[field.fieldname]"
           @editrow="(doc: Doc) => $emit('editrow', doc)"
           @change="(value: DocValue) => $emit('value-change', field, value)"
@@ -60,9 +62,6 @@
               $emit('row-change', field, value, parentfield)
           "
         />
-        <div v-if="errors?.[field.fieldname]" class="text-sm text-red-600 mt-1">
-          {{ errors[field.fieldname] }}
-        </div>
       </div>
     </div>
   </div>

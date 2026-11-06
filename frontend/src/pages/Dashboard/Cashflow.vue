@@ -23,6 +23,7 @@
 </template>
 <script lang="ts">
 import { AccountTypeEnum } from 'models/baseModels/Account/types';
+import { useColorScheme } from 'frappe-ui';
 import { LineChart as FrappeLineChart } from 'frappe-ui/charts';
 import { ModelNameEnum } from 'models/types';
 import { fyo } from 'src/initFyo';
@@ -46,8 +47,9 @@ export default defineComponent({
     FrappeLineChart,
   },
   extends: DashboardChartBase,
-  props: {
-    darkMode: { type: Boolean, default: false },
+  setup() {
+    const { colorScheme } = useColorScheme();
+    return { colorScheme };
   },
   data: () => ({
     data: [] as { inflow: number; outflow: number; yearmonth: string }[],
@@ -55,17 +57,20 @@ export default defineComponent({
     hasData: false,
   }),
   computed: {
+    isDarkMode(): boolean {
+      return this.colorScheme === 'dark';
+    },
     chartData() {
       let data = this.data;
       let colors = [
-        uicolors.blue[this.darkMode ? '600' : '500'],
-        uicolors.pink[this.darkMode ? '600' : '500'],
+        uicolors.blue[this.isDarkMode ? '600' : '500'],
+        uicolors.pink[this.isDarkMode ? '600' : '500'],
       ];
       if (!this.hasData) {
         data = dummyData;
         colors = [
-          this.darkMode ? uicolors.gray['700'] : uicolors.gray['200'],
-          this.darkMode ? uicolors.gray['800'] : uicolors.gray['100'],
+          this.isDarkMode ? uicolors.gray['700'] : uicolors.gray['200'],
+          this.isDarkMode ? uicolors.gray['800'] : uicolors.gray['100'],
         ];
       }
 

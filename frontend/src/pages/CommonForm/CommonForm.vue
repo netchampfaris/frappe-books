@@ -27,29 +27,30 @@
       </p>
     </template>
     <template v-if="hasDoc" #header>
-      <Button
+      <FrappeButton
         v-if="canShowLinks"
-        :icon="true"
-        :title="t`View linked entries`"
+        variant="ghost"
+        icon="lucide-link"
+        :tooltip="t`View linked entries`"
+        :aria-label="t`View linked entries`"
         @click="showLinks = true"
-      >
-        <Icon name="link" class="w-4 h-4" />
-      </Button>
-      <Button
+      />
+      <FrappeButton
         v-if="canPrint"
         ref="printButton"
-        :icon="true"
-        :title="t`Open Print View`"
+        variant="ghost"
+        icon="lucide-printer"
+        :tooltip="t`Open Print View`"
+        :aria-label="t`Open Print View`"
         @click="routeTo(`/print/${doc.schemaName}/${doc.name}`)"
-      >
-        <Icon name="printer" class="w-4 h-4" />
-      </Button>
-      <Button :icon="true" :title="t`Toggle between form and full width`" @click="toggleWidth">
-        <Icon
-          :name="useFullWidth ? 'minimize' : 'maximize'"
-          class="w-4 h-4"
-        />
-      </Button>
+      />
+      <FrappeButton
+        variant="ghost"
+        :icon="useFullWidth ? 'lucide-minimize-2' : 'lucide-maximize-2'"
+        :tooltip="t`Toggle between form and full width`"
+        :aria-label="t`Toggle between form and full width`"
+        @click="toggleWidth"
+      />
       <DropdownWithActions
         v-for="group of groupedActions"
         :key="group.label"
@@ -59,12 +60,22 @@
         <p v-if="group.group">
           {{ group.group }}
         </p>
-        <Icon v-else name="more-horizontal" class="w-4 h-4" />
+        <Icon v-else name="more-horizontal" class="size-4" />
       </DropdownWithActions>
-      <Button v-if="doc?.canSave" type="primary" @click="sync">
-        {{ t`Save` }}
-      </Button>
-      <Button v-else-if="doc?.canSubmit" type="primary" @click="submit">{{ t`Submit` }}</Button>
+      <FrappeButton
+        v-if="doc?.canSave"
+        variant="solid"
+        theme="gray"
+        :label="t`Save`"
+        @click="sync"
+      />
+      <FrappeButton
+        v-else-if="doc?.canSubmit"
+        variant="solid"
+        theme="gray"
+        :label="t`Submit`"
+        @click="submit"
+      />
     </template>
     <template #body>
       <FormHeader
@@ -124,11 +135,13 @@ import { DocValue } from 'fyo/core/types';
 import { Doc } from 'fyo/model/doc';
 import { DEFAULT_CURRENCY } from 'fyo/utils/consts';
 import { ValidationError } from 'fyo/utils/errors';
-import { TabButtons as FrappeTabButtons } from 'frappe-ui';
+import {
+  Button as FrappeButton,
+  TabButtons as FrappeTabButtons,
+} from 'frappe-ui';
 import { getDocStatus } from 'models/helpers';
 import { ModelNameEnum } from 'models/types';
 import { Field, Schema } from 'schemas/types';
-import Button from 'src/components/Button.vue';
 import Barcode from 'src/components/Controls/Barcode.vue';
 import ExchangeRate from 'src/components/Controls/ExchangeRate.vue';
 import DropdownWithActions from 'src/components/DropdownWithActions.vue';
@@ -163,7 +176,7 @@ export default defineComponent({
     FormHeader,
     Icon,
     CommonFormSection,
-    Button,
+    FrappeButton,
     DropdownWithActions,
     Barcode,
     ExchangeRate,
@@ -193,7 +206,7 @@ export default defineComponent({
       docOrNull,
       shortcuts,
       context,
-      printButton: ref<InstanceType<typeof Button> | null>(null),
+      printButton: ref<InstanceType<typeof FrappeButton> | null>(null),
     };
   },
   data() {

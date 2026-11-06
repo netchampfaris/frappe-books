@@ -1,14 +1,10 @@
 <template>
-  <Modal
-    :open-modal="openModal && !isDismissed && isValuesSeeded"
+  <Dialog
+    v-model:open="isOpen"
+    :title="t`Open POS Shift`"
     size="2xl"
-    class="w-full p-4"
-    @closemodal="handleDismiss"
+    :actions="actions"
   >
-    <h1 class="text-xl font-semibold text-center text-ink-gray-8 pb-4">
-      {{ t`Open POS Shift` }}
-    </h1>
-
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <div class="min-w-0">
         <h2 class="text-lg font-medium text-ink-gray-8">
@@ -43,40 +39,12 @@
           :allow-add-remove-rows="false"
           @row-change="handleChange"
         />
-
-        <div class="mt-4 grid grid-cols-2 gap-4 items-end">
-          <Button
-            size="lg"
-            theme="red"
-            type="primary"
-            class="w-full"
-            @click="handleDismiss"
-          >
-            <slot>
-              <span>{{ t`Back` }}</span>
-            </slot>
-          </Button>
-
-          <Button
-            size="lg"
-            theme="green"
-            type="primary"
-            class="w-full"
-            @click="handleSubmit"
-          >
-            <slot>
-              <span>{{ t`Submit` }}</span>
-            </slot>
-          </Button>
-        </div>
       </div>
     </div>
-  </Modal>
+  </Dialog>
 </template>
 
 <script lang="ts">
-import Button from 'src/components/Button.vue';
-import Modal from 'src/components/Modal.vue';
 import Table from 'src/components/Controls/Table.vue';
 import { AccountTypeEnum } from 'models/baseModels/Account/types';
 import { ModelNameEnum } from 'models/types';
@@ -84,6 +52,7 @@ import { Money } from 'pesa';
 import { POSOpeningShift } from 'models/inventory/Point of Sale/POSOpeningShift';
 import { computed } from 'vue';
 import { defineComponent } from 'vue';
+import { Dialog, type DialogAction } from 'frappe-ui';
 import { fyo } from 'src/initFyo';
 import { showToast } from 'src/utils/interactive';
 import { t } from 'fyo';
@@ -92,19 +61,19 @@ import { getPOSOpeningShiftDoc } from 'src/utils/pos';
 
 export default defineComponent({
   name: 'OpenPOSShift',
-  components: { Button, Modal, Table },
+  components: { Dialog, Table },
   provide() {
     return {
       doc: computed(() => this.posShiftDoc),
     };
   },
   props: {
-    openModal: {
+    open: {
       default: false,
       type: Boolean,
     },
   },
-  emits: ['toggleModal'],
+  emits: ['update:open'],
   data() {
     return {
       posShiftDoc: undefined as POSOpeningShift | undefined,
@@ -114,6 +83,32 @@ export default defineComponent({
     };
   },
   computed: {
+    isOpen: {
+      get(): boolean {
+        return this.open && !this.isDismissed && this.isValuesSeeded;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.handleDismiss();
+        }
+      },
+    },
+    actions(): DialogAction[] {
+      return [
+        {
+          label: t`Back`,
+          variant: 'subtle',
+          theme: 'gray',
+          onClick: () => this.handleDismiss(),
+        },
+        {
+          label: t`Submit`,
+          variant: 'solid',
+          theme: 'gray',
+          onClick: () => this.handleSubmit(),
+        },
+      ];
+    },
     getDefaultCashDenominations() {
       return this.fyo.singles.Defaults?.posCashDenominations;
     },
@@ -237,7 +232,7 @@ export default defineComponent({
           await (await jvDoc.sync()).submit();
         }
 
-        this.$emit('toggleModal', 'ShiftOpen');
+        this.$emit('update:open', false);
       } catch (error) {
         showToast({
           type: 'error',

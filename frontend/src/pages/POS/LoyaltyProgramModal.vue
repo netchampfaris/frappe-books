@@ -1,25 +1,21 @@
 <template>
-  <Modal
-    :open-modal="openModal"
+  <Dialog
+    v-model:open="isOpen"
+    :title="t`Redeem Loyalty Points`"
     size="sm"
-    class="h-96 w-full"
-    @closemodal="cancelLoyaltyProgram"
+    :actions="actions"
   >
-    <p class="text-center py-4 text-ink-gray-8">Redeem Loyalty Points</p>
+    <div class="flex items-center justify-end gap-2">
+      <span class="lucide-coins size-5 text-ink-amber-5" aria-hidden="true" />
 
-    <hr class="border-outline-gray-1" />
-
-    <div class="flex gap-2 p-3 justify-end pt-10">
-      <Icon name="coins" class="size-5 text-ink-amber-5" />
-
-      <p class="text-ink-gray-8 pr-6">
+      <p class="text-ink-gray-8">
         {{ loyaltyPoints }} - ({{ loyaltyProgram }})
       </p>
     </div>
 
     <Int
       v-if="sinvDoc.fieldMap"
-      class="flex-shrink-0 px-10 pb-10"
+      class="mt-6 flex-shrink-0"
       :show-label="true"
       :border="true"
       :focus-input="true"
@@ -28,62 +24,26 @@
       @keydown.enter="saveLoyaltyPoints"
       @change="setPendingLoyaltyPoints"
     />
-
-    <div class="row-start-6 grid grid-cols-2 gap-4 mt-auto mb-2 px-10">
-      <div class="col-span-2">
-        <Button
-          size="lg"
-          theme="green"
-          type="primary"
-          class="w-full"
-          @click="saveLoyaltyPoints"
-        >
-          <slot>
-            <span>{{ t`Save` }}</span>
-          </slot>
-        </Button>
-      </div>
-    </div>
-
-    <div class="row-start-6 grid grid-cols-2 gap-4 mt-auto px-10">
-      <div class="col-span-2">
-        <Button
-          size="lg"
-          theme="red"
-          type="primary"
-          class="w-full"
-          @click="cancelLoyaltyProgram"
-        >
-          <slot>
-            <span>{{ t`Cancel` }}</span>
-          </slot>
-        </Button>
-      </div>
-    </div>
-  </Modal>
+  </Dialog>
 </template>
 
 <script lang="ts">
-import Button from 'src/components/Button.vue';
-import Modal from 'src/components/Modal.vue';
 import { SalesInvoice } from 'models/baseModels/SalesInvoice/SalesInvoice';
 import { defineComponent, inject } from 'vue';
 import { t } from 'fyo';
+import { Dialog, type DialogAction } from 'frappe-ui';
 import { showToast } from 'src/utils/interactive';
 import { ModelNameEnum } from 'models/types';
 import Int from 'src/components/Controls/Int.vue';
-import Icon from 'src/components/Icon.vue';
 
 export default defineComponent({
   name: 'LoyaltyProgramModal',
   components: {
-    Modal,
-    Button,
+    Dialog,
     Int,
-    Icon,
   },
   props: {
-    openModal: {
+    open: {
       type: Boolean,
       default: false,
     },
@@ -97,7 +57,7 @@ export default defineComponent({
       default: '',
     },
   },
-  emits: ['setLoyaltyPoints', 'toggleModal'],
+  emits: ['setLoyaltyPoints', 'update:open'],
   setup() {
     return {
       sinvDoc: inject('sinvDoc') as SalesInvoice,
@@ -110,8 +70,36 @@ export default defineComponent({
       pendingLoyaltyPoints: 0,
     };
   },
+  computed: {
+    isOpen: {
+      get(): boolean {
+        return this.open;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.cancelLoyaltyProgram();
+        }
+      },
+    },
+    actions(): DialogAction[] {
+      return [
+        {
+          label: t`Cancel`,
+          variant: 'subtle',
+          theme: 'gray',
+          onClick: () => this.cancelLoyaltyProgram(),
+        },
+        {
+          label: t`Save`,
+          variant: 'solid',
+          theme: 'gray',
+          onClick: () => this.saveLoyaltyPoints(),
+        },
+      ];
+    },
+  },
   watch: {
-    openModal(value: boolean) {
+    open(value: boolean) {
       if (!value) {
         return;
       }
@@ -129,7 +117,7 @@ export default defineComponent({
     cancelLoyaltyProgram() {
       this.sinvDoc.loyaltyPoints = this.initialLoyaltyPoints;
       this.$emit('setLoyaltyPoints', this.initialLoyaltyPoints);
-      this.$emit('toggleModal', 'LoyaltyProgram', false);
+      this.$emit('update:open', false);
     },
     async applyLoyaltyPoints(newValue: number): Promise<boolean> {
       try {
@@ -195,7 +183,7 @@ export default defineComponent({
       const applied = await this.applyLoyaltyPoints(this.pendingLoyaltyPoints);
 
       if (applied) {
-        this.$emit('toggleModal', 'LoyaltyProgram', false);
+        this.$emit('update:open', false);
       }
     },
   },

@@ -1,14 +1,23 @@
 <template>
   <div class="flex flex-col h-full">
     <PageHeader :title="t`Chart of Accounts`">
-      <Button v-if="!isAllExpanded" @click="expand">{{ t`Expand` }}</Button>
-      <Button v-if="!isAllCollapsed" @click="collapse">{{
-        t`Collapse`
-      }}</Button>
+      <FrappeButton
+        v-if="!isAllExpanded"
+        variant="subtle"
+        :label="t`Expand`"
+        @click="expand"
+      />
+      <FrappeButton
+        v-if="!isAllCollapsed"
+        variant="subtle"
+        :label="t`Collapse`"
+        @click="collapse"
+      />
     </PageHeader>
-    <div
+    <FrappeScrollArea
       v-if="root"
-      class="books-account-tree relative flex-1 overflow-y-auto p-4 custom-scroll custom-scroll-thumb1"
+      class="books-account-tree min-h-0 flex-1"
+      viewport-class="p-4"
     >
       <FrappeTree
         :nodes="accounts"
@@ -42,19 +51,18 @@
                 align="end"
               >
                 <template #trigger="{ open }">
-                  <Button
-                    :background="false"
-                    :icon="true"
+                  <FrappeButton
+                    variant="ghost"
                     size="xs"
-                    :title="t`Actions for ${String(node.name)}`"
+                    icon="lucide-more-horizontal"
+                    :tooltip="t`Actions for ${String(node.name)}`"
+                    :aria-label="t`Actions for ${String(node.name)}`"
                     :class="
                       open
                         ? 'opacity-100'
                         : 'opacity-0 group-hover/row:opacity-100 group-focus-within/row:opacity-100'
                     "
-                  >
-                    <Icon name="more-horizontal" :size="14" />
-                  </Button>
+                  />
                 </template>
               </FrappeDropdown>
             </div>
@@ -66,7 +74,7 @@
           </div>
         </template>
       </FrappeTree>
-    </div>
+    </FrappeScrollArea>
     <FrappeDialog
       :open="!!addingParent"
       :title="newAccountTitle"
@@ -88,19 +96,22 @@
         "
       />
       <template #actions>
-        <Button @click="cancelAddingAccount(addingParent)">{{
-          t`Cancel`
-        }}</Button>
-        <Button
-          type="primary"
+        <FrappeButton
+          variant="subtle"
+          :label="t`Cancel`"
+          @click="cancelAddingAccount(addingParent)"
+        />
+        <FrappeButton
+          variant="solid"
+          theme="gray"
+          :label="t`Save`"
           :loading="insertingAccount"
           :disabled="!newAccountName.trim() || insertingAccount"
           @click="
             addingParent &&
             createNewAccount(addingParent, addingParent.addingGroupAccount)
           "
-          >{{ t`Save` }}</Button
-        >
+        />
       </template>
     </FrappeDialog>
   </div>
@@ -108,8 +119,10 @@
 <script lang="ts">
 import { t } from 'fyo';
 import {
+  Button as FrappeButton,
   Dialog as FrappeDialog,
   Dropdown as FrappeDropdown,
+  ScrollArea as FrappeScrollArea,
   TextInput as FrappeTextInput,
   Tree as FrappeTree,
   type DropdownOptions,
@@ -124,7 +137,6 @@ import { docsPathRef } from 'src/utils/refs';
 import { commongDocDelete, openQuickEdit } from 'src/utils/ui';
 import { getMapFromList } from 'utils/index';
 import { defineComponent, nextTick } from 'vue';
-import Button from '../components/Button.vue';
 import { handleErrorWithDialog } from '../errorHandling';
 import { AccountRootType, AccountType } from 'models/baseModels/Account/types';
 import { TreeViewSettings } from 'fyo/model/types';
@@ -156,16 +168,14 @@ const rootAccountIcons: Record<string, string> = {
 
 export default defineComponent({
   components: {
-    Button,
     Icon,
     PageHeader,
+    FrappeButton,
+    FrappeScrollArea,
     FrappeTextInput,
     FrappeTree,
     FrappeDialog,
     FrappeDropdown,
-  },
-  props: {
-    darkMode: { type: Boolean, default: false },
   },
   data() {
     return {

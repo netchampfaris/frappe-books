@@ -1,6 +1,6 @@
 <template>
   <FrappeSelect
-    :model-value="value"
+    :model-value="modelValue"
     :options="periodOptions"
     size="md"
     variant="subtle"
@@ -23,13 +23,13 @@ export default defineComponent({
     FrappeSelect,
   },
   props: {
-    value: { type: String as PropType<PeriodKey>, default: 'This Year' },
+    modelValue: { type: String as PropType<PeriodKey>, default: 'This Year' },
     options: {
       type: Array as PropType<PeriodKey[]>,
       default: () => ['This Year', 'This Quarter', 'This Month', 'YTD'],
     },
   },
-  emits: ['change'],
+  emits: ['update:modelValue'],
   computed: {
     periodSelectorMap(): Record<PeriodKey, string> {
       return {
@@ -57,7 +57,7 @@ export default defineComponent({
         return;
       }
 
-      this.$emit('change', period);
+      this.$emit('update:modelValue', period);
     },
   },
 });

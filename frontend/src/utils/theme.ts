@@ -1,5 +1,11 @@
+import { useColorScheme } from 'frappe-ui';
+
 export function setDarkMode(darkMode: boolean): void {
-  document.documentElement.dataset.theme = darkMode ? 'dark' : 'light';
+  // `useColorScheme()` initializes frappe-ui's shared state on first call,
+  // restoring whatever was left in `localStorage['theme']`. SystemSettings.darkMode
+  // is the app's source of truth, so we set it right after and let it win.
+  const { setColorScheme } = useColorScheme();
+  setColorScheme(darkMode ? 'dark' : 'light');
 
   if (darkMode) {
     document.documentElement.classList.add(

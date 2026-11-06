@@ -25,6 +25,7 @@
 </template>
 
 <script lang="ts">
+import { useColorScheme } from 'frappe-ui';
 import { DonutChart as FrappeDonutChart } from 'frappe-ui/charts';
 import { fyo } from 'src/initFyo';
 import { uicolors } from 'src/utils/colors';
@@ -46,18 +47,21 @@ export default defineComponent({
     SectionHeader,
   },
   extends: DashboardChartBase,
-  props: {
-    darkMode: { type: Boolean, default: false },
+  setup() {
+    const { colorScheme } = useColorScheme();
+    return { colorScheme };
   },
   data: () => ({
     expenses: [] as {
       account: string;
       total: number;
       color: { color: string; darkColor: string };
-      class: { class: string; darkClass: string };
     }[],
   }),
   computed: {
+    isDarkMode(): boolean {
+      return this.colorScheme === 'dark';
+    },
     totalExpense(): number {
       return this.expenses.reduce((sum, expense) => sum + expense.total, 0);
     },
@@ -65,7 +69,7 @@ export default defineComponent({
       return this.expenses.length > 0;
     },
     expensePalette(): string[] {
-      return this.expenses.map(({ color }) => (this.darkMode ? color.darkColor : color.color));
+      return this.expenses.map(({ color }) => (this.isDarkMode ? color.darkColor : color.color));
     },
   },
   activated() {
@@ -76,22 +80,19 @@ export default defineComponent({
       const { fromDate, toDate } = getDatesAndPeriodList(this.period);
       let topExpenses = await fyo.db.getTopExpenses(fromDate.toISO(), toDate.toISO());
       const shades = [
-        { class: 'bg-pink-500', hex: uicolors.pink['500'] },
-        { class: 'bg-pink-400', hex: uicolors.pink['400'] },
-        { class: 'bg-pink-300', hex: uicolors.pink['300'] },
-        { class: 'bg-pink-200', hex: uicolors.pink['200'] },
-        { class: 'bg-pink-100', hex: uicolors.pink['100'] },
+        uicolors.pink['500'],
+        uicolors.pink['400'],
+        uicolors.pink['300'],
+        uicolors.pink['200'],
+        uicolors.pink['100'],
       ];
 
       const darkshades = [
-        { class: 'bg-pink-600', hex: uicolors.pink['600'] },
-        { class: 'bg-pink-500', hex: uicolors.pink['500'] },
-        { class: 'bg-pink-400', hex: uicolors.pink['400'] },
-        { class: 'bg-pink-300', hex: uicolors.pink['300'] },
-        {
-          class: 'bg-pink-200 dark:bg-opacity-80',
-          hex: uicolors.pink['200'] + 'CC',
-        },
+        uicolors.pink['600'],
+        uicolors.pink['500'],
+        uicolors.pink['400'],
+        uicolors.pink['300'],
+        uicolors.pink['200'] + 'CC',
       ];
 
       this.expenses = topExpenses
@@ -100,8 +101,7 @@ export default defineComponent({
           return {
             account: d.account,
             total: d.total,
-            color: { color: shades[i].hex, darkColor: darkshades[i].hex },
-            class: { class: shades[i].class, darkClass: darkshades[i].class },
+            color: { color: shades[i], darkColor: darkshades[i] },
           };
         });
     },

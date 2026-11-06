@@ -10,6 +10,7 @@
     :size="size"
     :text-right="textRight"
     :container-styles="containerStyles"
+    :error="error"
   />
   <component
     v-else
@@ -20,6 +21,7 @@
     :description="showLabel ? df.sub_label : undefined"
     :placeholder="inputPlaceholder"
     :required="isRequired"
+    :error="error"
     :clearable="true"
     :format="frappeDateFormat"
     :size="frappeSize"

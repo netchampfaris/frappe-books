@@ -4,6 +4,7 @@
 		:label="showLabel ? df.label : undefined"
 		:description="showLabel ? df.sub_label : undefined"
 		:required="required"
+		:error="error"
 		:size="frappeSize"
 		:variant="border ? 'outline' : 'ghost'"
 		:class="controlClasses"
@@ -41,6 +42,7 @@ export default defineComponent({
 		border: { type: Boolean, default: false },
 		showLabel: { type: Boolean, default: false },
 		required: { type: Boolean, default: false },
+		error: { type: String, default: undefined },
 		size: { type: String, default: "large" },
 		textRight: {
 			type: [null, Boolean] as PropType<boolean | null>,

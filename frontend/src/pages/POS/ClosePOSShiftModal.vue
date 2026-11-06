@@ -1,15 +1,11 @@
 <template>
-  <Modal
-    :open-modal="openModal && isValuesSeeded"
+  <Dialog
+    v-model:open="isOpen"
+    :title="t`Close POS Shift`"
     size="4xl"
-    class="w-full p-4"
-    @closemodal="$emit('toggleModal', 'ShiftClose', false)"
+    :actions="actions"
   >
-    <h1 class="text-xl font-semibold text-center text-ink-gray-8 pb-4">
-      {{ t`Close POS Shift` }}
-    </h1>
-
-    <h2 class="mt-4 mb-2 text-lg font-medium text-ink-gray-8">
+    <h2 class="mb-2 text-lg font-medium text-ink-gray-8">
       {{ t`Closing Cash` }}
     </h2>
     <Table
@@ -24,7 +20,7 @@
     />
 
     <h2 class="mt-6 mb-2 text-lg text-ink-gray-8 font-medium">
-      Closing Amounts
+      {{ t`Closing Amounts` }}
     </h2>
     <Table
       v-if="isValuesSeeded"
@@ -37,38 +33,10 @@
       :allow-add-remove-rows="false"
       @row-change="updateClosingAmounts"
     />
-
-    <div class="mt-4 grid grid-cols-2 gap-4 items-end">
-      <Button
-        size="lg"
-        theme="red"
-        type="primary"
-        class="w-full"
-        @click="$emit('toggleModal', 'ShiftClose', false)"
-      >
-        <slot>
-          <span>{{ t`Cancel` }}</span>
-        </slot>
-      </Button>
-
-      <Button
-        size="lg"
-        theme="green"
-        type="primary"
-        class="w-full"
-        @click="handleSubmit"
-      >
-        <slot>
-          <span>{{ t`Submit` }}</span>
-        </slot>
-      </Button>
-    </div>
-  </Modal>
+  </Dialog>
 </template>
 
 <script lang="ts">
-import Button from 'src/components/Button.vue';
-import Modal from 'src/components/Modal.vue';
 import Table from 'src/components/Controls/Table.vue';
 import { ModelNameEnum } from 'models/types';
 import { Money } from 'pesa';
@@ -76,6 +44,7 @@ import { OpeningAmounts } from 'models/inventory/Point of Sale/OpeningAmounts';
 import { POSOpeningShift } from 'models/inventory/Point of Sale/POSOpeningShift';
 import { computed } from 'vue';
 import { defineComponent } from 'vue';
+import { Dialog, type DialogAction } from 'frappe-ui';
 import { fyo } from 'src/initFyo';
 import { showToast } from 'src/utils/interactive';
 import { t } from 'fyo';
@@ -89,19 +58,19 @@ import { ForbiddenError } from 'fyo/utils/errors';
 
 export default defineComponent({
   name: 'ClosePOSShiftModal',
-  components: { Button, Modal, Table },
+  components: { Dialog, Table },
   provide() {
     return {
       doc: computed(() => this.posClosingShiftDoc),
     };
   },
   props: {
-    openModal: {
+    open: {
       default: false,
       type: Boolean,
     },
   },
-  emits: ['toggleModal'],
+  emits: ['update:open'],
   data() {
     return {
       isValuesSeeded: false,
@@ -112,12 +81,40 @@ export default defineComponent({
     };
   },
   computed: {
+    isOpen: {
+      get(): boolean {
+        return this.open && this.isValuesSeeded;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.$emit('update:open', false);
+        }
+      },
+    },
+    actions(): DialogAction[] {
+      return [
+        {
+          label: t`Cancel`,
+          variant: 'subtle',
+          theme: 'gray',
+          onClick: () => this.$emit('update:open', false),
+        },
+        {
+          label: t`Submit`,
+          variant: 'solid',
+          theme: 'gray',
+          onClick: async () => {
+            await this.handleSubmit();
+          },
+        },
+      ];
+    },
     isOnline() {
       return !!navigator.onLine;
     },
   },
   watch: {
-    openModal: {
+    open: {
       async handler(value: boolean) {
         if (value) {
           await this.prepareShift();
@@ -241,7 +238,7 @@ export default defineComponent({
         );
 
         await this.fyo.singles.POSSettings?.setAndSync('isShiftOpen', false);
-        this.$emit('toggleModal', 'ShiftClose');
+        this.$emit('update:open', false);
       } catch (error) {
         return showToast({
           type: 'error',

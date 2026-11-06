@@ -10,6 +10,7 @@
     :size="size"
     :text-right="textRight"
     :container-styles="containerStyles"
+    :error="error"
   />
   <FrappeSelect
     v-else
@@ -21,6 +22,7 @@
     :description="showLabel ? df.sub_label : undefined"
     :placeholder="inputPlaceholder"
     :required="isRequired"
+    :error="error"
     :size="frappeSize"
     :variant="frappeVariant"
     :class="controlClasses"

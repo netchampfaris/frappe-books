@@ -14,26 +14,16 @@ import { showSidebar } from 'src/utils/refs';
           whitespace-nowrap
           w-sidebar
         "
-        :dark-mode="darkMode"
         @change-db-file="$emit('change-db-file')"
       />
     </Transition>
 
-    <div
-      class="
-        flex flex-1
-        min-w-0
-        overflow-y-hidden
-        custom-scroll custom-scroll-thumb1
-        bg-surface-base
-      "
-    >
+    <div class="flex flex-1 min-w-0 overflow-y-hidden bg-surface-base">
       <router-view v-slot="{ Component }">
         <keep-alive>
           <component
             :is="Component"
             :key="$route.path"
-            :dark-mode="darkMode"
             class="min-w-0 flex-1"
           />
         </keep-alive>
@@ -48,7 +38,6 @@ import { showSidebar } from 'src/utils/refs';
                 String(route.query.schemaName ?? '') +
                 String(route.query.name ?? '')
               "
-              :dark-mode="darkMode"
             />
           </div>
         </Transition>
@@ -63,9 +52,6 @@ export default defineComponent({
   name: 'Desk',
   components: {
     Sidebar,
-  },
-  props: {
-    darkMode: { type: Boolean, default: false },
   },
   emits: ['change-db-file'],
 });

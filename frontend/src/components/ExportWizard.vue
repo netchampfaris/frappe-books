@@ -1,11 +1,7 @@
 <template>
   <div>
-    <!-- Export Wizard Header -->
-    <FormHeader :form-title="label" :form-sub-title="t`Export Wizard`" />
-    <FrappeDivider />
-
     <!-- Export Config -->
-    <div class="flex flex-wrap items-end gap-4 p-4">
+    <div class="flex flex-wrap items-end gap-4 pb-4">
       <Check
         v-if="configFields.useListFilters && Object.keys(listFilters).length"
         class="min-h-8 w-56"
@@ -42,7 +38,7 @@
     <!-- Fields Selection -->
     <FrappeScrollArea class="max-h-80">
       <!-- Main Fields -->
-      <div class="p-4">
+      <div class="py-4">
         <h2 class="text-sm font-semibold text-ink-gray-8">
           {{ fyo.schemaMap[schemaName]?.label ?? schemaName }}
         </h2>
@@ -75,7 +71,7 @@
       </div>
 
       <!-- Table Fields -->
-      <div v-for="efs of filteredTableFields" :key="efs.fieldname" class="p-4">
+      <div v-for="efs of filteredTableFields" :key="efs.fieldname" class="py-4">
         <h2 class="text-sm font-semibold text-ink-gray-8">
           {{ fyo.schemaMap[efs.target]?.label ?? schemaName }}
         </h2>
@@ -106,7 +102,7 @@
 
     <!-- Export Button -->
     <FrappeDivider />
-    <div class="p-4 flex justify-between items-center">
+    <div class="pt-4 flex justify-between items-center">
       <p class="text-sm text-ink-gray-6">
         {{ t`${numSelected} fields selected` }}
       </p>
@@ -141,7 +137,6 @@ import { PropType, defineComponent } from 'vue';
 import Check from './Controls/Check.vue';
 import Int from './Controls/Int.vue';
 import Select from './Controls/Select.vue';
-import FormHeader from './FormHeader.vue';
 
 interface ExportWizardData {
   useListFilters: boolean;
@@ -155,7 +150,6 @@ interface ExportWizardData {
 export default defineComponent({
   components: {
     Check,
-    FormHeader,
     FrappeButton,
     FrappeDivider,
     FrappeScrollArea,
@@ -165,7 +159,6 @@ export default defineComponent({
   props: {
     schemaName: { type: String, required: true },
     listFilters: { type: Object as PropType<QueryFilter>, default: () => {} },
-    pageTitle: String,
   },
   data() {
     const fields = fyo.schemaMap[this.schemaName]?.fields ?? [];
@@ -181,13 +174,6 @@ export default defineComponent({
     } as ExportWizardData;
   },
   computed: {
-    label() {
-      if (this.pageTitle) {
-        return this.pageTitle;
-      }
-
-      return fyo.schemaMap?.[this.schemaName]?.label ?? '';
-    },
     filteredTableFields() {
       return this.tableFields.filter((f) => {
         const ef = this.getExportField(f.fieldname);
@@ -301,7 +287,8 @@ export default defineComponent({
       );
     },
     getFileName() {
-      const fileName = this.label.toLowerCase().replace(/\s/g, '-');
+      const label = fyo.schemaMap[this.schemaName]?.label ?? this.schemaName;
+      const fileName = label.toLowerCase().replace(/\s/g, '-');
       const dateString = new Date().toISOString().split('T')[0];
       return `${fileName}_${dateString}`;
     },

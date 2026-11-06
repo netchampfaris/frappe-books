@@ -1,11 +1,10 @@
 <template>
   <FrappeDialog
-    :open="openModal"
+    v-model:open="isOpen"
     :title="paymentTitle"
     size="2xl"
     :dismissible="true"
     :show-close-button="true"
-    @close="cancelTransaction"
   >
     <div
       v-if="sinvDoc.fieldMap"
@@ -156,7 +155,7 @@ export default defineComponent({
     PaymentSummary,
   },
   props: {
-    openModal: Boolean,
+    open: Boolean,
   },
   emits: [
     'createTransaction',
@@ -164,7 +163,7 @@ export default defineComponent({
     'setPaymentMethod',
     'setTransferClearanceDate',
     'setTransferRefNo',
-    'toggleModal',
+    'update:open',
   ],
   setup() {
     return {
@@ -184,6 +183,16 @@ export default defineComponent({
     };
   },
   computed: {
+    isOpen: {
+      get(): boolean {
+        return this.open;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.cancelTransaction();
+        }
+      },
+    },
     paymentTitle(): string {
       return this.sinvDoc.isReturn
         ? this.fyo.t`Complete refund`
@@ -254,7 +263,7 @@ export default defineComponent({
     },
   },
   watch: {
-    openModal(isOpen: boolean) {
+    open(isOpen: boolean) {
       if (isOpen) {
         void this.initializePayment();
       }
@@ -338,7 +347,7 @@ export default defineComponent({
       this.$emit('setPaymentMethod', undefined);
       this.$emit('setTransferRefNo', '');
       this.$emit('setTransferClearanceDate', undefined);
-      this.$emit('toggleModal', 'Payment');
+      this.$emit('update:open', false);
     },
   },
 });

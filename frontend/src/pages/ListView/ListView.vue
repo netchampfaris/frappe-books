@@ -1,39 +1,42 @@
 <template>
   <div class="flex flex-col">
     <PageHeader :title="title">
-      <Button
+      <FrappeButton
         v-if="
           schemaName === 'Item' &&
           (!isSelectionMode || (isSelectionMode && selectedItems.length === 0))
         "
+        size="md"
+        :label="t`Select`"
         @click="toggleSelectionMode"
-      >
-        {{ t`Select` }}
-      </Button>
+      />
       <FrappeDropdown
         v-if="isSelectionMode && schemaName === 'Item' && selectedItems.length > 0"
         :options="actionOptions"
         align="end"
       >
         <template #trigger>
-          <Button class="w-40">{{ t`Create` }}</Button>
+          <FrappeButton class="w-40" size="md" :label="t`Create`" />
         </template>
       </FrappeDropdown>
-      <Button ref="exportButton" :icon="false" @click="openExportModal = true">
-        {{ t`Export` }}
-      </Button>
+      <FrappeButton
+        ref="exportButton"
+        size="md"
+        :label="t`Export`"
+        @click="openExportModal = true"
+      />
       <FilterDropdown ref="filterDropdown" :schema-name="schemaName" @change="applyFilter" />
-      <Button
+      <FrappeButton
         v-if="canCreate"
         ref="makeNewDocButton"
-        :icon="true"
-        type="primary"
-        :title="t`Create new entry`"
+        icon="lucide-plus"
+        variant="solid"
+        theme="gray"
+        size="md"
+        :tooltip="t`Create new entry`"
         :aria-label="t`Create new entry`"
         @click="handleMakeNewDoc"
-      >
-        <Icon name="plus" class="w-4 h-4" />
-      </Button>
+      />
     </PageHeader>
     <List
       ref="list"
@@ -48,24 +51,29 @@
       @make-new-doc="makeNewDoc"
       @selected-items-changed="updateSelectedItems"
     />
-    <Modal :open-modal="openExportModal" size="4xl" @closemodal="openExportModal = false">
+    <FrappeDialog
+      v-model:open="openExportModal"
+      size="4xl"
+      :title="t`Export ${title}`"
+    >
       <ExportWizard
         class="w-full"
         :schema-name="schemaName"
-        :title="pageTitle"
         :list-filters="listFilters"
       />
-    </Modal>
+    </FrappeDialog>
   </div>
 </template>
 <script lang="ts">
 import { Field } from 'schemas/types';
-import { Dropdown as FrappeDropdown, type DropdownOptions } from 'frappe-ui';
-import Button from 'src/components/Button.vue';
+import {
+  Button as FrappeButton,
+  Dialog as FrappeDialog,
+  Dropdown as FrappeDropdown,
+  type DropdownOptions,
+} from 'frappe-ui';
 import ExportWizard from 'src/components/ExportWizard.vue';
 import FilterDropdown from 'src/components/FilterDropdown.vue';
-import Icon from 'src/components/Icon.vue';
-import Modal from 'src/components/Modal.vue';
 import PageHeader from 'src/components/PageHeader.vue';
 
 import { fyo } from 'src/initFyo';
@@ -84,11 +92,10 @@ export default defineComponent({
   components: {
     PageHeader,
     List,
-    Button,
     FilterDropdown,
-    Icon,
-    Modal,
     ExportWizard,
+    FrappeButton,
+    FrappeDialog,
     FrappeDropdown,
   },
   props: {
@@ -100,8 +107,8 @@ export default defineComponent({
     return {
       shortcuts: inject(shortcutsKey),
       list: ref<InstanceType<typeof List> | null>(null),
-      makeNewDocButton: ref<InstanceType<typeof Button> | null>(null),
-      exportButton: ref<InstanceType<typeof Button> | null>(null),
+      makeNewDocButton: ref<InstanceType<typeof FrappeButton> | null>(null),
+      exportButton: ref<InstanceType<typeof FrappeButton> | null>(null),
       filterDropdown: ref<InstanceType<typeof FilterDropdown> | null>(null),
     };
   },

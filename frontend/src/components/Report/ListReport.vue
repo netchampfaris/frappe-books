@@ -171,9 +171,9 @@ export default defineComponent({
     },
     getCellColorClass(cell) {
       if (cell.color === 'red') {
-        return 'text-red-600';
+        return 'text-ink-red-5';
       } else if (cell.color === 'green') {
-        return 'text-green-600';
+        return 'text-ink-green-5';
       }
 
       if (!cell.rawValue) {

@@ -10,6 +10,7 @@
     :size="size"
     :text-right="textRight"
     :container-styles="containerStyles"
+    :error="error"
   />
   <FrappeTextarea
     v-else
@@ -22,6 +23,7 @@
     :description="showLabel ? df.sub_label : undefined"
     :placeholder="inputPlaceholder"
     :required="isRequired"
+    :error="error"
     :size="frappeSize"
     :variant="frappeVariant"
     tabindex="0"

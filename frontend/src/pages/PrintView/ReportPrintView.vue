@@ -1,12 +1,20 @@
 <template>
   <div class="flex flex-col w-full h-full">
     <PageHeader :title="t`Print ${title}`">
-      <Button type="primary" @click="savePDF()">
-        {{ t`Save as PDF` }}
-      </Button>
-      <Button type="primary" @click="savePDF(true)">
-        {{ t`Print` }}
-      </Button>
+      <FrappeButton
+        variant="solid"
+        theme="gray"
+        size="md"
+        :label="t`Save as PDF`"
+        @click="savePDF()"
+      />
+      <FrappeButton
+        variant="solid"
+        theme="gray"
+        size="md"
+        :label="t`Print`"
+        @click="savePDF(true)"
+      />
     </PageHeader>
 
     <div
@@ -155,7 +163,7 @@
 import { Report } from 'reports/Report';
 import { reports } from 'reports/index';
 import { OptionField } from 'schemas/types';
-import Button from 'src/components/Button.vue';
+import { Button as FrappeButton } from 'frappe-ui';
 import Check from 'src/components/Controls/Check.vue';
 import Int from 'src/components/Controls/Int.vue';
 import Select from 'src/components/Controls/Select.vue';
@@ -168,7 +176,7 @@ import { PropType, defineComponent } from 'vue';
 import PrintSheet from 'src/components/PrintSheet.vue';
 
 export default defineComponent({
-  components: { PageHeader, Button, Check, Int, PrintSheet, Select },
+  components: { PageHeader, FrappeButton, Check, Int, PrintSheet, Select },
   props: {
     reportName: {
       type: String as PropType<keyof typeof reports>,

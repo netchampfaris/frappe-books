@@ -21,6 +21,7 @@
   </div>
 </template>
 <script lang="ts">
+import { useColorScheme } from 'frappe-ui';
 import { BarChart as FrappeBarChart } from 'frappe-ui/charts';
 import { fyo } from 'src/initFyo';
 import { formatXLabels, getYMax, getYMin } from 'src/utils/chart';
@@ -43,18 +44,22 @@ export default defineComponent({
     FrappeBarChart,
   },
   extends: DashboardChartBase,
-  props: {
-    darkMode: { type: Boolean, default: false },
+  setup() {
+    const { colorScheme } = useColorScheme();
+    return { colorScheme };
   },
   data: () => ({
     data: [] as { yearmonth: string; balance: number }[],
     hasData: false,
   }),
   computed: {
+    isDarkMode(): boolean {
+      return this.colorScheme === 'dark';
+    },
     chartData() {
       const points = [this.data.map((d) => d.balance)];
-      const positive = uicolors.blue[this.darkMode ? '600' : '500'];
-      const negative = uicolors.pink[this.darkMode ? '600' : '500'];
+      const positive = uicolors.blue[this.isDarkMode ? '600' : '500'];
+      const negative = uicolors.pink[this.isDarkMode ? '600' : '500'];
       const format = (value: number) => fyo.format(value ?? 0, 'Currency');
       const yMax = getYMax(points);
       const yMin = getYMin(points);

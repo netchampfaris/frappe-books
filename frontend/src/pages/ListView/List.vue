@@ -5,9 +5,9 @@
       :columns="listColumns"
       :selectable="isSelectionMode"
       :selection="selectedItems"
-      :row-height="48"
+      :row-height="40"
       divider="full"
-      class="custom-scroll custom-scroll-thumb1 min-h-0 flex-1 overflow-y-auto text-ink-gray-8 list-gap-4 list-row-px-3"
+      class="custom-scroll custom-scroll-thumb1 min-h-0 flex-1 overflow-y-auto px-2 text-ink-gray-8 list-gap-4 list-row-px-2"
       @update:selection="updateSelection"
     >
       <FrappeListHeader class="sticky top-0 z-10 bg-surface-base">
@@ -49,7 +49,7 @@
 
     <!-- Pagination Footer -->
     <div v-if="data?.length" class="mt-auto">
-      <hr class="border-outline-gray-1" />
+      <FrappeDivider />
       <Paginator
         :item-count="data.length"
         class="px-4"
@@ -66,14 +66,20 @@
       <p class="my-3 text-ink-gray-8">
         {{ t`No entries found` }}
       </p>
-      <Button v-if="canCreate" type="primary" @click="$emit('makeNewDoc')">
-        {{ t`Make Entry` }}
-      </Button>
+      <FrappeButton
+        v-if="canCreate"
+        variant="solid"
+        theme="gray"
+        size="md"
+        :label="t`Make Entry`"
+        @click="$emit('makeNewDoc')"
+      />
     </div>
   </div>
 </template>
 <script lang="ts">
 import { ListViewSettings, RenderData } from 'fyo/model/types';
+import { Button as FrappeButton, Divider as FrappeDivider } from 'frappe-ui';
 import {
   List as FrappeList,
   ListCell as FrappeListCell,
@@ -83,7 +89,6 @@ import {
   ListRows as FrappeListRows,
 } from 'frappe-ui/list';
 import { cloneDeep } from 'lodash';
-import Button from 'src/components/Button.vue';
 import Paginator from 'src/components/Paginator.vue';
 import { fyo } from 'src/initFyo';
 import { isNumeric } from 'src/utils';
@@ -101,7 +106,8 @@ export default defineComponent({
     FrappeListRow,
     FrappeListRows,
     ListCell,
-    Button,
+    FrappeButton,
+    FrappeDivider,
     Paginator,
   },
   props: {

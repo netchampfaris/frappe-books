@@ -10,6 +10,7 @@
     :size="size"
     :text-right="textRight"
     :container-styles="containerStyles"
+    :error="error"
   />
   <FrappeTextInput
     v-else
@@ -22,6 +23,7 @@
     :description="showLabel ? df.sub_label : undefined"
     :placeholder="inputPlaceholder"
     :required="isRequired"
+    :error="error"
     :size="frappeSize"
     :variant="frappeVariant"
     :step="step"
@@ -61,6 +63,7 @@ export default defineComponent({
     border: { type: Boolean, default: false },
     size: { type: String, default: 'large' },
     placeholder: String,
+    error: { type: String, default: undefined },
     showLabel: { type: Boolean, default: false },
     containerStyles: { type: Object, default: () => ({}) },
     textRight: {

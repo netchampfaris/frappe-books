@@ -11,6 +11,7 @@
     :size="size"
     :text-right="textRight"
     :container-styles="containerStyles"
+    :error="error"
   >
     <template v-if="canLink" #trailing>
       <LinkedEntryButton
@@ -36,6 +37,7 @@
     :placeholder="inputPlaceholder"
     :empty-text="emptyMessage"
     :required="isRequired"
+    :error="error"
     :size="frappeSize"
     :variant="frappeVariant"
     class="min-w-0"

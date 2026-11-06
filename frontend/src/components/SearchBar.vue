@@ -1,11 +1,18 @@
 <template>
-  <FrappeButton
-    icon="lucide-search"
-    class="rounded-e-none"
-    :tooltip="t`Search`"
-    :aria-label="t`Search`"
-    @click="open"
-  />
+  <!--
+    The palette (state, filters, shortcuts) stays here; only its trigger is
+    slotted, so a caller can render the opener wherever it belongs (the sidebar
+    renders a SidebarItem) without owning any of the search logic.
+  -->
+  <slot name="trigger" :open="open">
+    <FrappeButton
+      icon="lucide-search"
+      class="rounded-e-none"
+      :tooltip="t`Search`"
+      :aria-label="t`Search`"
+      @click="open"
+    />
+  </slot>
 
   <!-- Search Modal -->
   <CommandPalette
@@ -298,14 +305,10 @@ export default defineComponent({
     this.openModal = false;
     this.setShortcuts();
   },
-  activated() {
-    this.setShortcuts();
-    this.openModal = false;
-  },
-  deactivated() {
-    this.shortcuts?.delete(COMPONENT_NAME);
-  },
-  unmounted() {
+  // No activated/deactivated pair: this now lives in the always-mounted
+  // sidebar, where those keep-alive hooks never fire. mounted/beforeUnmount
+  // are the ones that run, so Mod+K is registered and torn down there.
+  beforeUnmount() {
     this.shortcuts?.delete(COMPONENT_NAME);
   },
   watch: {

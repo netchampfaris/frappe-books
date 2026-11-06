@@ -30,15 +30,13 @@
       <FrappeButton
         v-if="!showSidebar"
         variant="ghost"
-        icon="lucide-chevrons-right"
+        icon="lucide-panel-left-open"
         class="!h-8 !w-8 !px-0 shrink-0 rtl-rotate-180"
         :tooltip="t`Show sidebar`"
         :aria-label="t`Show sidebar`"
         @click="toggleSidebar"
       />
 
-      <!-- Nav Group -->
-      <PageHeaderNavGroup />
       <h1
         v-if="title"
         class="text-xl font-semibold select-none truncate text-ink-gray-9"
@@ -70,13 +68,11 @@ import { languageDirectionKey } from 'src/utils/injectionKeys';
 import { showSidebar } from 'src/utils/refs';
 import { toggleSidebar } from 'src/utils/ui';
 import { defineComponent, inject, Transition } from 'vue';
-import PageHeaderNavGroup from './PageHeaderNavGroup.vue';
 
 export default defineComponent({
   components: {
     FrappeButton,
     FrappePageHeader,
-    PageHeaderNavGroup,
     Transition,
   },
   props: {

@@ -1,96 +1,52 @@
 <template>
-  <Modal
-    :open-modal="openModal"
+  <Dialog
+    v-model:open="isOpen"
+    :title="t`Apply Price List`"
     size="sm"
-    class="h-auto w-full"
-    @closemodal="cancelPriceList"
+    :actions="actions"
   >
-    <p class="text-center font-semibold py-3">{{ t`Apply Price List` }}</p>
-    <div class="px-10">
-      <hr class="border-outline-gray-1" />
-      <div class="flex justify-center pt-10">
-        <div class="flex justify-between w-full mb-20">
-          <div class="w-full">
-            <Link
-              v-if="sinvDoc.fieldMap"
-              class="flex-shrink-0 w-full"
-              :border="true"
-              :value="selectedPriceList"
-              :focus-input="true"
-              :df="sinvDoc.fieldMap.priceList"
-              @change="(value) => (selectedPriceList = value ?? '')"
-            />
-          </div>
-          <div class="w-10 flex justify-end items-center">
-            <FrappeButton
-              icon="lucide-trash-2"
-              theme="red"
-              variant="ghost"
-              :tooltip="t`Remove price list`"
-              :aria-label="t`Remove price list`"
-              @click="removePriceList"
-            />
-          </div>
-        </div>
-      </div>
+    <div class="flex items-end gap-2">
+      <Link
+        v-if="sinvDoc.fieldMap"
+        class="min-w-0 flex-1"
+        :border="true"
+        :value="selectedPriceList"
+        :focus-input="true"
+        :df="sinvDoc.fieldMap.priceList"
+        @change="(value) => (selectedPriceList = value ?? '')"
+      />
 
-      <div class="row-start-6 grid grid-cols-2 gap-4 mt-auto mb-2">
-        <div class="col-span-2">
-          <Button
-            size="lg"
-            theme="green"
-            type="primary"
-            class="w-full"
-            @click="setPriceList"
-          >
-            <slot>
-              <span>{{ t`Save` }}</span>
-            </slot>
-          </Button>
-        </div>
-      </div>
-
-      <div class="row-start-6 grid grid-cols-2 gap-4 mt-auto mb-8">
-        <div class="col-span-2">
-          <Button
-            size="lg"
-            theme="red"
-            type="primary"
-            class="w-full"
-            @click="cancelPriceList"
-          >
-            <slot>
-              <span>{{ t`Cancel` }}</span>
-            </slot>
-          </Button>
-        </div>
-      </div>
+      <Button
+        icon="lucide-trash-2"
+        theme="red"
+        variant="ghost"
+        :tooltip="t`Remove price list`"
+        :aria-label="t`Remove price list`"
+        @click="removePriceList"
+      />
     </div>
-  </Modal>
+  </Dialog>
 </template>
 
 <script lang="ts">
 import { t } from 'fyo';
-import Modal from 'src/components/Modal.vue';
 import { defineComponent, inject } from 'vue';
-import Button from 'src/components/Button.vue';
 import { showToast } from 'src/utils/interactive';
 import Link from 'src/components/Controls/Link.vue';
-import { Button as FrappeButton } from 'frappe-ui';
+import { Button, Dialog, type DialogAction } from 'frappe-ui';
 import { SalesInvoice } from 'models/baseModels/SalesInvoice/SalesInvoice';
 
 export default defineComponent({
   name: 'PriceListModal',
   components: {
     Link,
-    Modal,
     Button,
-    FrappeButton,
+    Dialog,
   },
   props: {
-    openModal: Boolean,
+    open: Boolean,
   },
-  emits: ['toggleModal'],
+  emits: ['update:open'],
   setup() {
     return {
       sinvDoc: inject('sinvDoc') as SalesInvoice,
@@ -101,8 +57,36 @@ export default defineComponent({
       selectedPriceList: '',
     };
   },
+  computed: {
+    isOpen: {
+      get(): boolean {
+        return this.open;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.cancelPriceList();
+        }
+      },
+    },
+    actions(): DialogAction[] {
+      return [
+        {
+          label: t`Cancel`,
+          variant: 'subtle',
+          theme: 'gray',
+          onClick: () => this.cancelPriceList(),
+        },
+        {
+          label: t`Save`,
+          variant: 'solid',
+          theme: 'gray',
+          onClick: () => this.setPriceList(),
+        },
+      ];
+    },
+  },
   watch: {
-    openModal(value: boolean) {
+    open(value: boolean) {
       if (value) {
         this.selectedPriceList = this.sinvDoc.priceList ?? '';
       }
@@ -115,7 +99,7 @@ export default defineComponent({
     async setPriceList() {
       try {
         await this.sinvDoc.set('priceList', this.selectedPriceList);
-        this.$emit('toggleModal', 'PriceList');
+        this.$emit('update:open', false);
       } catch (error) {
         showToast({
           type: 'error',
@@ -124,7 +108,7 @@ export default defineComponent({
       }
     },
     cancelPriceList() {
-      this.$emit('toggleModal', 'PriceList');
+      this.$emit('update:open', false);
     },
   },
 });

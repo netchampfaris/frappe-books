@@ -1,63 +1,33 @@
 <template>
-  <Modal
-    :open-modal="openModal"
+  <Dialog
+    v-model:open="isOpen"
+    :title="t`Select the Batch`"
     size="sm"
-    class="h-auto w-full"
-    @closemodal="closeModal"
+    :actions="actions"
   >
-    <p class="text-center font-semibold py-3 text-ink-gray-8">
-      {{ t`Select the Batch` }}
-    </p>
-
-    <div class="px-10 pt-6">
-      <Link
-        :df="{
-          fieldname: 'batch',
-          fieldtype: 'Link',
-          target: 'Batch',
-          label: t`Batch`,
-          required: true,
-          getOptions: getBatchOptions,
-          filters: { item: itemCode },
-        }"
-        :value="selectedBatch"
-        :border="true"
-        :show-label="true"
-        @change="(value: string) => (selectedBatch = value)"
-      />
-
-      <div class="mt-8 mb-6 grid grid-cols-2 gap-4">
-        <Button
-          size="lg"
-          theme="green"
-          type="primary"
-          class="w-full"
-          :disabled="!selectedBatch"
-          @click="submitSelection"
-        >
-          <span>{{ t`Select` }}</span>
-        </Button>
-
-        <Button
-          size="lg"
-          theme="red"
-          type="primary"
-          class="w-full"
-          @click="closeModal"
-        >
-          <span>{{ t`Cancel` }}</span>
-        </Button>
-      </div>
-    </div>
-  </Modal>
+    <Link
+      :df="{
+        fieldname: 'batch',
+        fieldtype: 'Link',
+        target: 'Batch',
+        label: t`Batch`,
+        required: true,
+        getOptions: getBatchOptions,
+        filters: { item: itemCode },
+      }"
+      :value="selectedBatch"
+      :border="true"
+      :show-label="true"
+      @change="(value: string) => (selectedBatch = value)"
+    />
+  </Dialog>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { t } from 'fyo';
 import { showToast } from 'src/utils/interactive';
-import Modal from 'src/components/Modal.vue';
-import Button from 'src/components/Button.vue';
+import { Dialog, type DialogAction } from 'frappe-ui';
 import Link from 'src/components/Controls/Link.vue';
 import { ModelNameEnum } from 'models/types';
 import { fyo } from 'src/initFyo';
@@ -65,12 +35,11 @@ import { fyo } from 'src/initFyo';
 export default defineComponent({
   name: 'BatchSelectionModal',
   components: {
-    Modal,
-    Button,
+    Dialog,
     Link,
   },
   props: {
-    openModal: {
+    open: {
       type: Boolean,
       default: false,
     },
@@ -79,11 +48,40 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ['toggleModal', 'batchSelected'],
+  emits: ['update:open', 'batchSelected'],
   data() {
     return {
       selectedBatch: '' as string,
     };
+  },
+  computed: {
+    isOpen: {
+      get(): boolean {
+        return this.open;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.closeModal();
+        }
+      },
+    },
+    actions(): DialogAction[] {
+      return [
+        {
+          label: t`Cancel`,
+          variant: 'subtle',
+          theme: 'gray',
+          onClick: () => this.closeModal(),
+        },
+        {
+          label: t`Select`,
+          variant: 'solid',
+          theme: 'gray',
+          disabled: !this.selectedBatch,
+          onClick: () => this.submitSelection(),
+        },
+      ];
+    },
   },
   methods: {
     async getBatchOptions() {
@@ -105,11 +103,11 @@ export default defineComponent({
     },
     submitSelection() {
       this.$emit('batchSelected', this.selectedBatch);
-      this.$emit('toggleModal', 'BatchSelection');
+      this.$emit('update:open', false);
       this.selectedBatch = '';
     },
     closeModal() {
-      this.$emit('toggleModal', 'BatchSelection');
+      this.$emit('update:open', false);
       this.selectedBatch = '';
     },
   },

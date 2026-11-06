@@ -33,48 +33,51 @@
       class="min-w-0 self-center"
     >
       <FormControl
-        class="min-w-0 flex-1"
+        class="min-w-0 flex-1 [&_[data-slot=error]]:sr-only"
         :size="size"
         :df="df"
         :value="row[df.fieldname]"
+        :error="errors[df.fieldname] || undefined"
         :read-only="readOnly ? true : undefined"
         @change="(value) => onChange(df, value)"
       />
     </FrappeListCell>
     <FrappeListCell v-if="canEditRow" class="justify-center">
-      <Button
-        :icon="true"
-        :padding="false"
-        :background="false"
+      <FrappeButton
+        variant="ghost"
         size="sm"
-        :title="t`Edit row`"
+        icon="lucide-square-pen"
+        :tooltip="t`Edit row`"
+        :aria-label="t`Edit row`"
         @click="openRowQuickEdit"
-      >
-        <Icon name="edit" class="w-4 h-4 text-ink-gray-6" />
-      </Button>
+      />
     </FrappeListCell>
 
-    <!-- Error Display -->
+    <!-- Row level error line, kept out of the 48px row grid -->
     <FrappeListCell
       v-if="hasErrors"
-      class="text-xs text-red-600 ps-2 col-span-full relative"
+      class="ps-2 col-span-full relative"
       style="bottom: 0.75rem; height: 0px"
     >
-      {{ getErrorString() }}
+      <FrappeErrorMessage
+        class="!text-xs !text-ink-red-5"
+        :message="getErrorString()"
+      />
     </FrappeListCell>
   </FrappeListRow>
 </template>
 <script>
 import { Doc } from 'fyo/model/doc';
-import { Button as FrappeButton } from 'frappe-ui';
+import {
+  Button as FrappeButton,
+  ErrorMessage as FrappeErrorMessage,
+} from 'frappe-ui';
 import {
   ListCell as FrappeListCell,
   ListRow as FrappeListRow,
 } from 'frappe-ui/list';
-import Icon from 'src/components/Icon.vue';
 import { getErrorMessage } from 'src/utils';
 import { computed, nextTick } from 'vue';
-import Button from '../Button.vue';
 import FormControl from './FormControl.vue';
 
 export default {
@@ -83,9 +86,8 @@ export default {
     FrappeListRow,
     FrappeListCell,
     FormControl,
-    Button,
     FrappeButton,
-    Icon,
+    FrappeErrorMessage,
   },
   provide() {
     return {

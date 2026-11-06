@@ -61,27 +61,33 @@
         <p v-if="loading" class="text-base text-ink-gray-6">
           {{ t`Loading instance...` }}
         </p>
-        <Button
+        <FrappeButton
           v-if="!loading"
-          class="w-24 border border-outline-gray-1"
-          @click="cancel"
-          >{{ t`Cancel` }}</Button
-        >
-        <Button
-          v-if="fyo.store.isDevelopment && !loading"
-          class="w-24 ml-auto mr-4 border border-outline-gray-1"
-          :disabled="loading"
-          @click="fill"
-          >{{ t`Fill` }}</Button
-        >
-        <Button
-          type="primary"
           class="w-24"
+          variant="outline"
+          size="md"
+          :label="t`Cancel`"
+          @click="cancel"
+        />
+        <FrappeButton
+          v-if="fyo.store.isDevelopment && !loading"
+          class="w-24 ml-auto mr-4"
+          variant="outline"
+          size="md"
+          :disabled="loading"
+          :label="t`Fill`"
+          @click="fill"
+        />
+        <FrappeButton
+          class="w-24"
+          variant="solid"
+          theme="gray"
+          size="md"
           data-testid="submit-button"
           :disabled="!areAllValuesFilled || loading"
+          :label="t`Submit`"
           @click="submit"
-          >{{ t`Submit` }}</Button
-        >
+        />
       </div>
     </template>
   </FormContainer>
@@ -92,7 +98,7 @@ import { Doc } from 'fyo/model/doc';
 import { TranslationString } from 'fyo/utils/translation';
 import { ModelNameEnum } from 'models/types';
 import { Field } from 'schemas/types';
-import Button from 'src/components/Button.vue';
+import { Button as FrappeButton } from 'frappe-ui';
 import FormContainer from 'src/components/FormContainer.vue';
 import FormHeader from 'src/components/FormHeader.vue';
 import { getErrorMessage } from 'src/utils';
@@ -105,7 +111,7 @@ import CommonFormSection from '../CommonForm/CommonFormSection.vue';
 export default defineComponent({
   name: 'SetupWizard',
   components: {
-    Button,
+    FrappeButton,
     FormContainer,
     FormHeader,
     CommonFormSection,

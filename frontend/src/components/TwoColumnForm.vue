@@ -8,6 +8,7 @@
         ref="controls"
         size="small"
         :df="df"
+        :error="errors[df.fieldname]"
         :value="(doc[df.fieldname] ?? []) as unknown[]"
         @change="
           async (value: Doc[] | DocValueMap[]) => await onChange(df, value)
@@ -21,8 +22,12 @@
         class="grid min-h-14 items-start gap-x-3 border-b border-outline-gray-1 px-4 py-3"
         :style="style"
       >
-        <div class="flex min-h-8 min-w-0 items-center break-words text-ink-gray-6">
-          {{ df.label }}
+        <div class="flex min-h-8 min-w-0 items-center break-words">
+          <FrappeFormLabel
+            size="md"
+            :label="df.label"
+            :required="isRequired(df)"
+          />
         </div>
 
         <div class="min-w-0">
@@ -31,15 +36,10 @@
             class="w-full"
             :df="df"
             :value="doc[df.fieldname]"
+            :error="errors[df.fieldname]"
             :text-right="false"
             @change="async (value: DocValue) => await onChange(df, value)"
           />
-          <div
-            v-if="errors[df.fieldname]"
-            class="mt-2 break-words text-p-sm text-ink-red-5"
-          >
-            {{ errors[df.fieldname] }}
-          </div>
         </div>
       </div>
     </template>
@@ -47,10 +47,11 @@
 </template>
 <script lang="ts">
 import { Doc } from 'fyo/model/doc';
+import { FormLabel as FrappeFormLabel } from 'frappe-ui';
 import FormControl from 'src/components/Controls/FormControl.vue';
 import { fyo } from 'src/initFyo';
 import { getErrorMessage } from 'src/utils';
-import { evaluateHidden } from 'src/utils/doc';
+import { evaluateHidden, evaluateRequired } from 'src/utils/doc';
 import Table from './Controls/Table.vue';
 import { defineComponent } from 'vue';
 import { Field } from 'schemas/types';
@@ -61,6 +62,7 @@ export default defineComponent({
   name: 'TwoColumnForm',
   components: {
     FormControl,
+    FrappeFormLabel,
     Table,
   },
   props: {
@@ -100,6 +102,9 @@ export default defineComponent({
     }
   },
   methods: {
+    isRequired(field: Field): boolean {
+      return evaluateRequired(field, this.doc);
+    },
     async onChange(field: Field, value: DocValue | Doc[] | DocValueMap[]) {
       const { fieldname } = field;
       delete this.errors[fieldname];

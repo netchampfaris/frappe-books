@@ -1,17 +1,11 @@
 <template>
-  <Modal
-    :open-modal="openModal"
+  <Dialog
+    v-model:open="isOpen"
+    :title="t`Invoices`"
     size="2xl"
-    class="flex h-[calc(100vh-6rem)] max-h-[40rem] w-full flex-col p-5"
-    @closemodal="closeModal"
+    :actions="actions"
   >
-    <p class="text-center font-semibold text-ink-gray-5">
-      {{ t`Invoices` }}
-    </p>
-
-    <hr class="mt-2 border-outline-gray-1" />
-
-    <div class="mt-4">
+    <div class="flex h-[calc(100vh-18rem)] max-h-[32rem] min-h-0 flex-col">
       <FrappeTextInput
         v-model="invoiceSearchTerm"
         type="text"
@@ -21,64 +15,52 @@
         size="md"
         @keyup.enter="handleEnterKey"
       />
+
+      <FrappeTabButtons
+        :model-value="savedInvoiceList ? 'saved' : 'submitted'"
+        :options="invoiceTabs"
+        class="mt-2 w-full"
+        fluid
+        @update:model-value="showSavedInvoices($event === 'saved')"
+      />
+
+      <InvoiceSelectionTable
+        v-model="selectedInvoiceName"
+        :rows="filteredInvoices"
+        :fields="tableFields"
+        :ratios="ratio"
+        :empty-text="t`No invoices found`"
+      />
     </div>
-
-    <FrappeTabButtons
-      :model-value="savedInvoiceList ? 'saved' : 'submitted'"
-      :options="invoiceTabs"
-      class="mt-2 w-full"
-      fluid
-      @update:model-value="showSavedInvoices($event === 'saved')"
-    />
-
-    <InvoiceSelectionTable
-      v-model="selectedInvoiceName"
-      :rows="filteredInvoices"
-      :fields="tableFields"
-      :ratios="ratio"
-      :empty-text="t`No invoices found`"
-    />
-
-    <div class="mt-4 grid grid-cols-2 gap-3">
-      <Button class="w-full" @click="closeModal">
-        {{ t`Cancel` }}
-      </Button>
-      <Button
-        class="w-full"
-        type="primary"
-        :disabled="!selectedInvoiceName"
-        @click="openSelectedInvoice"
-      >
-        {{ t`Open Invoice` }}
-      </Button>
-    </div>
-  </Modal>
+  </Dialog>
 </template>
 
 <script lang="ts">
-import Button from 'src/components/Button.vue';
-import Modal from 'src/components/Modal.vue';
 import InvoiceSelectionTable from 'src/components/POS/InvoiceSelectionTable.vue';
 import { SalesInvoice } from 'models/baseModels/SalesInvoice/SalesInvoice';
 import { defineComponent } from 'vue';
 import { ModelNameEnum } from 'models/types';
 import { Field } from 'schemas/types';
 import { Money } from 'pesa';
-import { TabButtons as FrappeTabButtons, TextInput as FrappeTextInput } from 'frappe-ui';
+import {
+  Dialog,
+  TabButtons as FrappeTabButtons,
+  TextInput as FrappeTextInput,
+  type DialogAction,
+} from 'frappe-ui';
 
 export default defineComponent({
   name: 'SavedInvoiceModal',
   components: {
-    Modal,
-    Button,
+    Dialog,
     InvoiceSelectionTable,
     FrappeTextInput,
     FrappeTabButtons,
   },
   props: {
-    openModal: Boolean,
+    open: Boolean,
   },
-  emits: ['toggleModal', 'selectedInvoiceName'],
+  emits: ['update:open', 'selectedInvoiceName'],
   data() {
     return {
       savedInvoiceList: true,
@@ -89,6 +71,33 @@ export default defineComponent({
     };
   },
   computed: {
+    isOpen: {
+      get(): boolean {
+        return this.open;
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.closeModal();
+        }
+      },
+    },
+    actions(): DialogAction[] {
+      return [
+        {
+          label: this.t`Cancel`,
+          variant: 'subtle',
+          theme: 'gray',
+          onClick: () => this.closeModal(),
+        },
+        {
+          label: this.t`Open Invoice`,
+          variant: 'solid',
+          theme: 'gray',
+          disabled: !this.selectedInvoiceName,
+          onClick: () => this.openSelectedInvoice(),
+        },
+      ];
+    },
     ratio() {
       return [1, 1, 1, 0.8];
     },
@@ -135,7 +144,7 @@ export default defineComponent({
     },
   },
   watch: {
-    async openModal(newVal) {
+    async open(newVal) {
       if (newVal) {
         this.selectedInvoiceName = '';
         await this.setSavedInvoices();
@@ -174,7 +183,7 @@ export default defineComponent({
     },
     closeModal() {
       this.selectedInvoiceName = '';
-      this.$emit('toggleModal', 'SavedInvoice');
+      this.$emit('update:open', false);
     },
     openSelectedInvoice() {
       const selectedInvoice = this.filteredInvoices.find(

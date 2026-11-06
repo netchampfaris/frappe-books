@@ -11,6 +11,7 @@
       :model-value="getChecked(value)"
       :label="showLabel && labelRight ? df.label : undefined"
       :required="isRequired"
+      :error="error"
       :disabled="isReadOnly"
       size="sm"
       :class="['min-w-0', labelClass, showMandatory ? 'text-ink-red-7' : '']"
